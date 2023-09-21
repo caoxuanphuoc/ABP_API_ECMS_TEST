@@ -4,8 +4,12 @@ using Abp.Authorization;
 using Abp.Domain.Entities;
 using Abp.Domain.Repositories;
 using Abp.Extensions;
+using Abp.UI;
 using EMS.Authorization;
+using EMS.Authorization.Classes;
 using EMS.Authorization.Roles;
+using EMS.Authorization.TrackingClasses;
+using EMS.Authorization.TuitionFees;
 using EMS.Authorization.UserClasses;
 using EMS.Authorization.Users;
 using EMS.UserClasses.Dto;
@@ -22,10 +26,22 @@ namespace EMS.UserClasses
     {
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
-        public UserClassAppService(IRepository<UserClass, long> repository, UserManager userManager, RoleManager roleManager) : base(repository)
+        private readonly IRepository<TuitionFee, long> _tuitionFeeRepository;
+        private readonly IRepository<TrackingClass, long> _trackingClassRepository;
+        private readonly IRepository<Class, long> _classRepository;
+        public UserClassAppService(
+            IRepository<UserClass, long> repository,
+            UserManager userManager,
+            RoleManager roleManager,
+            IRepository<TuitionFee, long> tuitionFeeRepository,
+            IRepository<TrackingClass, long> trackingClassRepository,
+            IRepository<Class, long> classRepository) : base(repository)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _tuitionFeeRepository = tuitionFeeRepository;
+            _trackingClassRepository = trackingClassRepository;
+            _classRepository = classRepository;
         }
 
         // Kiểm tra xem User có tồn tại hay không
@@ -137,6 +153,20 @@ namespace EMS.UserClasses
             userClass.IsActive = input.IsActive;
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
+        }
+
+        // Delete UserClass
+        public override async Task DeleteAsync(EntityDto<long> input)
+        {
+            CheckDeletePermission();
+            var tuitionFeeCount = await _tuitionFeeRepository.CountAsync(x => x.StudentId == input.Id);
+            var trackingClassCount = await _trackingClassRepository.CountAsync(x => x.StudentId == input.Id);
+            var classCount = await _classRepository.CountAsync(x => x.TeacherId == input.Id);
+            if (tuitionFeeCount > 0 || trackingClassCount > 0 || classCount > 0)
+            {
+                throw new UserFriendlyException($"UseClass is being used with id = {input.Id}");
+            }
+            await base.DeleteAsync(input);
         }
     }
 }
