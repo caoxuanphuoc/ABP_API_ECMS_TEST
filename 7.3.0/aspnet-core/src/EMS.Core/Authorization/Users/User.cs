@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using Abp.Authorization.Users;
+﻿using Abp.Authorization.Users;
 using Abp.Extensions;
+using EMS.Authorization.UserClasses;
+using System;
+using System.Collections.Generic;
 
 namespace EMS.Authorization.Users
 {
     public class User : AbpUser<User>
     {
         public const string DefaultPassword = "123qwe";
+        public ICollection<UserClass> UserClasses { get; set; }
 
         public static string CreateRandomPassword()
         {
