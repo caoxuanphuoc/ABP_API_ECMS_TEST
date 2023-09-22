@@ -81,7 +81,7 @@ namespace EMS.TrackingClasses
             throw new EntityNotFoundException("Not found UserClass");
         }
 
-        // Get All TuitionFee
+        // Get All TrackingClass
         public override async Task<PagedResultDto<TrackingClassDto>> GetAllAsync(PagedTrackingClassResultRequestDto input)
         {
             CheckGetAllPermission();
@@ -100,7 +100,7 @@ namespace EMS.TrackingClasses
             return new PagedResultDto<TrackingClassDto>(totalCount, listTrackingClassDtos);
         }
 
-        // Get TuitionFee
+        // Get TrackingClass
         public override async Task<TrackingClassDto> GetAsync(EntityDto<long> input)
         {
             CheckGetPermission();
@@ -112,7 +112,7 @@ namespace EMS.TrackingClasses
             return trackingClassDto;
         }
 
-        // Create new TuitionFee
+        // Create new TrackingClass
         public override async Task<TrackingClassDto> CreateAsync(CreateOrUpdateTrackingClassDto input)
         {
             CheckCreatePermission();
@@ -126,6 +126,19 @@ namespace EMS.TrackingClasses
             var createTrackingClass = await Repository.InsertAndGetIdAsync(trackingClass);
             var getCreateTrackingClassId = new EntityDto<long> { Id = createTrackingClass };
             return await GetAsync(getCreateTrackingClassId);
+        }
+
+        // Update TrackingClass
+        public override async Task<TrackingClassDto> UpdateAsync(CreateOrUpdateTrackingClassDto input)
+        {
+            CheckUpdatePermission();
+            var userClass = await GetEntitiesAsync(input);
+            var trackingClass = await Repository.GetAsync(input.Id);
+            trackingClass.UserClass = userClass;
+            trackingClass.Date = input.Date;
+            trackingClass.CheckInTime = input.CheckInTime;
+            await base.UpdateAsync(input);
+            return await GetAsync(new EntityDto<long> { Id = input.Id });
         }
     }
 }
