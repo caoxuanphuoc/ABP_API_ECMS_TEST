@@ -48,7 +48,7 @@ namespace EMS.TuitionFees
         // Create Query
         protected override IQueryable<TuitionFee> CreateFilteredQuery(PagedTuitionFeeResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.UserClass.User, x => x.UserClass.User.Roles);
+            var query = Repository.GetAllIncluding(x => x.UserClass, x => x.UserClass.User, x => x.UserClass.User.Roles);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
