@@ -128,5 +128,18 @@ namespace EMS.TuitionFees
             var getCreateTuitionFeeId = new EntityDto<long> { Id = createTuitionFee };
             return await GetAsync(getCreateTuitionFeeId);
         }
+
+        // Update TuitionFee
+        public override async Task<TuitionFeeDto> UpdateAsync(CreateOrUpdateTuitionFeeDto input)
+        {
+            CheckUpdatePermission();
+            var userClass = await GetEntitiesAsync(input);
+            var tuitionFee = await Repository.GetAsync(input.Id);
+            tuitionFee.UserClass = userClass;
+            tuitionFee.Fee = input.Fee;
+            tuitionFee.DatePayment = input.DatePayment;
+            await base.UpdateAsync(input);
+            return await GetAsync(new EntityDto<long> { Id = input.Id });
+        }
     }
 }
