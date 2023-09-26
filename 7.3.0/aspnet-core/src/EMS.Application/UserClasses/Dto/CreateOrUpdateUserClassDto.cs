@@ -12,7 +12,7 @@ namespace EMS.UserClasses.Dto
         [Required]
         public long UserId { get; set; }
         [Required]
-        public DateTime OffTimes { get; set; }
+        public int OffTimes { get; set; }
         [Required]
         public DateTime DateStart { get; set; }
         [Required]
