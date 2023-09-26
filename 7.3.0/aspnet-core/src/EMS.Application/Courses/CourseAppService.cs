@@ -34,11 +34,10 @@ namespace EMS.Courses
 
         protected override IQueryable<Course> CreateFilteredQuery(PagedCourseResultRequestDto input)
         {
-            var inputKey = input.Keyword.ToLower();
             return Repository.GetAllIncluding()
                     .WhereIf(!input.Keyword.IsNullOrWhiteSpace(),
-                            x => x.CourseName.ToLower().Contains(inputKey) ||
-                            x.Quantity.ToString() == input.Keyword);
+                            x => x.CourseName.ToLower().Contains(input.Keyword.ToLower()) ||
+                            x.Quantity.ToString() == input.Keyword.ToLower());
         }
         protected override IQueryable<Course> ApplySorting(IQueryable<Course> query, PagedCourseResultRequestDto input)
         {
