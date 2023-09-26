@@ -13,7 +13,7 @@ namespace EMS.Authorization.UserClasses
     public class UserClass : FullAuditedEntity<long>
     {
         public bool IsActive { get; set; }
-        public DateTime OffTimes { get; set; }
+        public int OffTimes { get; set; }
         public DateTime DateStart { get; set; }
         [ForeignKey("User")]
         public long UserId { get; set; }
