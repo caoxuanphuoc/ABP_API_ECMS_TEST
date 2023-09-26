@@ -10,7 +10,7 @@ namespace EMS.UserClasses.Dto
     public class UserClassDto : EntityDto<long>
     {
         public UserDto User { get; set; }
-        public DateTime OffTimes { get; set; }
+        public int OffTimes { get; set; }
         public DateTime DateStart { get; set; }
         public bool IsActive { get; set; }
     }
