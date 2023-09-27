@@ -13,8 +13,6 @@ using EMS.Authorization.Schedules;
 using EMS.Authorization.UserClasses;
 using EMS.Classes.Dto;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,84 +40,75 @@ namespace EMS.Classes
         }
 
         // Get RoleNames from AbpRoles
-        protected async Task<String[]> GetRoleNames(Class classRoom)
-        {
-            var roles = classRoom.UserClass.User.Roles;
-            List<string> roleNames = new();
-            foreach (var role in roles)
-            {
-                var roleName = await _roleManager.FindByIdAsync(role.RoleId.ToString());
-                roleNames.Add(roleName.Name);
-            }
-            return roleNames.ToArray();
-        }
+        //protected async Task<String[]> GetRoleNames(Class classRoom)
+        //{
+        //    var roles = classRoom.UserClass.User.Roles;
+        //    List<string> roleNames = new();
+        //    foreach (var role in roles)
+        //    {
+        //        var roleName = await _roleManager.FindByIdAsync(role.RoleId.ToString());
+        //        roleNames.Add(roleName.Name);
+        //    }
+        //    return roleNames.ToArray();
+        //}
         // Create Query
         protected override IQueryable<Class> CreateFilteredQuery(PagedClassResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.UserClass, x => x.UserClass.User, x => x.UserClass.User.Roles);
+            var query = Repository.GetAllIncluding(x => x.Course);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
-                query = query.Where(x => x.UserClass.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.UserClass.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.UserClass.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower())
-                                        && x.UserClass.User.IsActive && x.UserClass.IsActive);
+                query = query.Where(x => x.LimitStudent.ToString() == input.Keyword && x.IsActive);
             }
             else
             {
-                query = query.Where(x => x.UserClass.User.IsActive && x.UserClass.IsActive);
+                query = query.Where(x => x.IsActive);
             }
             return query;
         }
         // Sorting by User
         protected override IQueryable<Class> ApplySorting(IQueryable<Class> query, PagedClassResultRequestDto input)
         {
-            return query.OrderBy(r => r.UserClass.User.Surname);
+            return query.OrderBy(r => r.StartDate);
         }
-        // Check UserClass exists or not
-        protected async Task<(UserClass userClass, Course course)> GetEntitiesAsync(CreateOrUpdateClassDto input)
+        // Check Course exists or not
+        protected async Task<Course> GetEntitiesAsync(CreateOrUpdateClassDto input)
         {
-            var userClass = await _userClassRepository.GetAsync(input.TeacherId);
             var course = await _courseRepository.GetAsync(input.CourseId);
-            if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
+            if ((course != null && course.IsDeleted) || course == null)
             {
-                if ((course != null && course.IsDeleted) || course == null)
-                {
-                    throw new EntityNotFoundException("Not found Course");
-                }
-                return (userClass, course);
+                throw new EntityNotFoundException("Not found Course");
             }
+            return course;
             throw new EntityNotFoundException("Not found UserClass");
         }
-        // Get All Class
-        public override async Task<PagedResultDto<ClassDto>> GetAllAsync(PagedClassResultRequestDto input)
-        {
-            CheckGetAllPermission();
-            var query = CreateFilteredQuery(input);
-            var totalCount = await AsyncQueryableExecuter.CountAsync(query);
-            query = ApplySorting(query, input);
-            query = ApplyPaging(query, input);
-            var classes = await AsyncQueryableExecuter.ToListAsync(query);
-            List<ClassDto> listClassDtos = new();
-            foreach (var classRoom in classes)
-            {
-                var classDto = ObjectMapper.Map<ClassDto>(classRoom);
-                classDto.Teacher.User.RoleNames = await GetRoleNames(classRoom);
-                listClassDtos.Add(classDto);
-            }
-            return new PagedResultDto<ClassDto>(totalCount, listClassDtos);
-        }
+        // Get All Class (để tạm sau này nếu thêm thuộc tính liên quan đến User thì sẽ sử dụng)
+        //public override async Task<PagedResultDto<ClassDto>> GetAllAsync(PagedClassResultRequestDto input)
+        //{
+        //    CheckGetAllPermission();
+        //    var query = CreateFilteredQuery(input);
+        //    var totalCount = await AsyncQueryableExecuter.CountAsync(query);
+        //    query = ApplySorting(query, input);
+        //    query = ApplyPaging(query, input);
+        //    var classes = await AsyncQueryableExecuter.ToListAsync(query);
+        //    List<ClassDto> listClassDtos = new();
+        //    foreach (var classRoom in classes)
+        //    {
+        //        var classDto = ObjectMapper.Map<ClassDto>(classRoom);
+        //        classDto.Teacher.User.RoleNames = await GetRoleNames(classRoom);
+        //        listClassDtos.Add(classDto);
+        //    }
+        //    return new PagedResultDto<ClassDto>(totalCount, listClassDtos);
+        //}
 
         // Get Class
         public override async Task<ClassDto> GetAsync(EntityDto<long> input)
         {
             CheckGetPermission();
-            var classRoom = await Repository.GetAllIncluding(
-                                        x => x.UserClass, x => x.Course, x => x.UserClass.User, x => x.UserClass.User.Roles)
+            var classRoom = await Repository.GetAllIncluding(x => x.Course)
                                         .FirstOrDefaultAsync(x => x.Id == input.Id)
                                         ?? throw new EntityNotFoundException("Not found Class");
             var classDto = ObjectMapper.Map<ClassDto>(classRoom);
-            classDto.Teacher.User.RoleNames = await GetRoleNames(classRoom);
             return classDto;
         }
 
@@ -127,17 +116,15 @@ namespace EMS.Classes
         public override async Task<ClassDto> CreateAsync(CreateOrUpdateClassDto input)
         {
             CheckCreatePermission();
-            var (userClass, course) = await GetEntitiesAsync(input);
+            var course = await GetEntitiesAsync(input);
             var classRoom = new Class
             {
-                TeacherId = userClass.Id,
                 CourseId = course.Id,
                 StartDate = input.StartDate,
                 EndDate = input.EndDate,
                 LimitStudent = input.LimitStudent,
                 CurrentStudent = input.CurrentStudent,
                 LessionTimes = input.LessionTimes,
-                CycleTimes = input.CycleTimes,
                 IsActive = input.IsActive,
             };
             var createClass = await Repository.InsertAndGetIdAsync(classRoom);
@@ -149,16 +136,14 @@ namespace EMS.Classes
         public override async Task<ClassDto> UpdateAsync(CreateOrUpdateClassDto input)
         {
             CheckUpdatePermission();
-            var (userClass, course) = await GetEntitiesAsync(input);
+            var course = await GetEntitiesAsync(input);
             var classRoom = await Repository.GetAsync(input.Id);
-            classRoom.UserClass = userClass;
             classRoom.Course = course;
             classRoom.StartDate = input.StartDate;
             classRoom.EndDate = input.EndDate;
             classRoom.LimitStudent = input.LimitStudent;
             classRoom.CurrentStudent = input.CurrentStudent;
             classRoom.LessionTimes = input.LessionTimes;
-            classRoom.CycleTimes = input.CycleTimes;
             classRoom.IsActive = input.IsActive;
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });

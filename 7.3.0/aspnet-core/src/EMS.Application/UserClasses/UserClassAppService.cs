@@ -161,8 +161,7 @@ namespace EMS.UserClasses
             CheckDeletePermission();
             var tuitionFeeCount = await _tuitionFeeRepository.CountAsync(x => x.StudentId == input.Id);
             var trackingClassCount = await _trackingClassRepository.CountAsync(x => x.StudentId == input.Id);
-            var classCount = await _classRepository.CountAsync(x => x.TeacherId == input.Id);
-            if (tuitionFeeCount > 0 || trackingClassCount > 0 || classCount > 0)
+            if (tuitionFeeCount > 0 || trackingClassCount > 0)
             {
                 throw new UserFriendlyException($"UseClass is being used with id = {input.Id}");
             }
