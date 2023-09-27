@@ -1,5 +1,13 @@
+import {
+  HomeOutlined,
+  UserOutlined,
+  TagsOutlined,
+  AppstoreOutlined,
+  InfoCircleOutlined,
+  ClockCircleOutlined,
+  BookOutlined,
+} from '@ant-design/icons';
 import LoadableComponent from './../Loadable/index';
-import { HomeOutlined, UserOutlined, TagsOutlined, AppstoreOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 export const userRouter: any = [
   {
@@ -65,6 +73,24 @@ export const appRouters: any = [
     icon: AppstoreOutlined,
     showInMenu: true,
     component: LoadableComponent(() => import('../../scenes/Tenants')),
+  },
+  {
+    path: '/courses',
+    permission: 'Pages.Users',
+    title: 'Courses',
+    name: 'course',
+    icon: BookOutlined,
+    showInMenu: true,
+    component: LoadableComponent(() => import('../../scenes/Courses')),
+  },
+  {
+    path: '/workShifts',
+    permission: 'Pages.Users',
+    title: 'WorkShifts',
+    name: 'workShift',
+    icon: ClockCircleOutlined,
+    showInMenu: true,
+    component: LoadableComponent(() => import('../../scenes/WorkShifts')),
   },
   {
     path: '/about',
