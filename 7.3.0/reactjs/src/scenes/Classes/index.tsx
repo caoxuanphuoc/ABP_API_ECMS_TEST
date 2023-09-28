@@ -72,12 +72,15 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
 
   async createOrUpdateModalOpen(entityDto: EntityDto) {
     if (entityDto.id === 0) {
-      //   await this.props.classStore.createClass();
+        await this.props.classStore.createClass();
     } else {
-      //   await this.props.classStore.get(entityDto);
+      await this.props.classStore.get(entityDto);
     }
 
-    this.setState({ classId: entityDto.id });
+    this.setState({
+      selectedCourseId: this.props.classStore.editClass?.course?.id,
+      classId: entityDto.id,
+    });
     this.Modal();
 
     setTimeout(() => {
@@ -233,14 +236,14 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           >
             <Table
               rowKey={(record) => record.id.toString()}
-              bordered={true}
+              bordered
               columns={columns}
               pagination={{
                 pageSize: 10,
                 total: classes === undefined ? 0 : classes.totalCount,
                 defaultCurrent: 1,
               }}
-              loading={classes === undefined ? true : false}
+              loading={classes === undefined}
               dataSource={classes === undefined ? [] : classes.items}
               onChange={this.handleTableChange}
             />
