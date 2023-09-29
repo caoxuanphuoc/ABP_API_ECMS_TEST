@@ -3,6 +3,7 @@ using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Entities;
 using Abp.Domain.Repositories;
+using Abp.Extensions;
 using EMS.Authorization;
 using EMS.Authorization.Classes;
 using EMS.Authorization.Roles;
@@ -10,6 +11,7 @@ using EMS.Authorization.Schedules;
 using EMS.Authorization.WorkShifts;
 using EMS.Schedules.Dto;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -98,6 +100,33 @@ namespace EMS.Schedules
             schedule.Date = input.Date;
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
+        }
+
+        protected IQueryable<Schedule> CreateFilteredQueryWithClassId(PagedScheduleResultRequestDto input, long classId)
+        {
+            var query = Repository.GetAllIncluding(x => x.Class, x => x.WorkShift, x => x.Class.Course);
+            if (!input.Keyword.IsNullOrWhiteSpace())
+            {
+                query = query.Where(x => x.ClassId == classId);
+            }
+            return query;
+        }
+
+        public async Task<PagedResultDto<ScheduleDto>> GetAllWithClassIdFilter(PagedScheduleResultRequestDto input, long classId)
+        {
+            CheckGetAllPermission();
+            var query = CreateFilteredQueryWithClassId(input, classId);
+            var totalCount = await AsyncQueryableExecuter.CountAsync(query);
+            query = ApplySorting(query, input);
+            query = ApplyPaging(query, input);
+            var schedules = await AsyncQueryableExecuter.ToListAsync(query);
+            List<ScheduleDto> listScheduleDtos = new();
+            foreach (var schedule in schedules)
+            {
+                var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
+                listScheduleDtos.Add(scheduleDto);
+            }
+            return new PagedResultDto<ScheduleDto>(totalCount, listScheduleDtos);
         }
     }
 }
