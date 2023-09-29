@@ -9,6 +9,7 @@ namespace EMS.Classes.Dto
     [AutoMapFrom(typeof(Class))]
     public class ClassDto : EntityDto<long>
     {
+        public string Code { get; set; }
         public CourseDto Course { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
