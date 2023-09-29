@@ -1,4 +1,5 @@
 export interface UpdateClassInput {
+  code: string;
   courseId: number;
   startDate: Date;
   endDate: Date;

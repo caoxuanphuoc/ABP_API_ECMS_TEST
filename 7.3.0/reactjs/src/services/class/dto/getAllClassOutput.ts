@@ -1,6 +1,7 @@
 import { GetCourseOutput } from '../../course/dto/getCourseOutput';
 
 export interface GetAllClassOuput {
+  code: string;
   course: GetCourseOutput;
   startDate: Date;
   endDate: Date;

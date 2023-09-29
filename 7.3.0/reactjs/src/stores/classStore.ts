@@ -42,6 +42,7 @@ class ClassStore {
   @action
   async createClass() {
     this.editClass = {
+      code: '',
       course: {
         id: 0,
         courseName: '',
