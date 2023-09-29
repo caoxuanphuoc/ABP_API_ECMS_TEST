@@ -12,8 +12,6 @@ namespace EMS.Classes.Dto
         [Required]
         public long CourseId { get; set; }
         [Required]
-        public long TeacherId { get; set; }
-        [Required]
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
@@ -22,9 +20,7 @@ namespace EMS.Classes.Dto
         [Required]
         public long CurrentStudent { get; set; }
         [Required]
-        public DateTime LessionTimes { get; set; }
-        [Required]
-        public DateTime CycleTimes { get; set; }
+        public int LessionTimes { get; set; }
         [Required]
         public bool IsActive { get; set; }
     }

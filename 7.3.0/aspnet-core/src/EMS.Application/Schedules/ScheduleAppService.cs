@@ -3,17 +3,13 @@ using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Entities;
 using Abp.Domain.Repositories;
-using Abp.Extensions;
 using EMS.Authorization;
 using EMS.Authorization.Classes;
 using EMS.Authorization.Roles;
 using EMS.Authorization.Schedules;
-using EMS.Authorization.UserClasses;
 using EMS.Authorization.WorkShifts;
 using EMS.Schedules.Dto;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,44 +33,16 @@ namespace EMS.Schedules
             _roleManager = roleManager;
         }
 
-        // Get RoleNames from AbpRoles
-        protected async Task<String[]> GetRoleNames(UserClass userClass)
-        {
-            var roles = userClass.User.Roles;
-            List<string> roleNames = new();
-            foreach (var role in roles)
-            {
-                var roleName = await _roleManager.FindByIdAsync(role.RoleId.ToString());
-                roleNames.Add(roleName.Name);
-            }
-            return roleNames.ToArray();
-        }
-        // Create Query
-        protected override IQueryable<Schedule> CreateFilteredQuery(PagedScheduleResultRequestDto input)
-        {
-            var query = Repository.GetAllIncluding(
-                x => x.Class, x => x.WorkShift, x => x.Class.UserClass,
-                x => x.Class.UserClass.User, x => x.Class.UserClass.User.Roles);
-
-            if (!input.Keyword.IsNullOrWhiteSpace())
-            {
-                query = query.Where(x => x.Class.UserClass.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.Class.UserClass.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.Class.UserClass.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.WorkShift.Code.ToLower().Contains(input.Keyword.ToLower())
-                                        && x.Class.UserClass.User.IsActive && x.Class.UserClass.IsActive);
-            }
-            else
-            {
-                query = query.Where(x => x.Class.UserClass.User.IsActive && x.Class.UserClass.IsActive);
-            }
-            return query;
-        }
-
         // Sorting by User
         protected override IQueryable<Schedule> ApplySorting(IQueryable<Schedule> query, PagedScheduleResultRequestDto input)
         {
-            return query.OrderBy(x => x.WorkShift.Code).ThenBy(r => r.Class.UserClass.User.UserName);
+            return query.OrderBy(x => x.WorkShift.Code).ThenBy(r => r.Date);
+        }
+
+        protected override IQueryable<Schedule> CreateFilteredQuery(PagedScheduleResultRequestDto input)
+        {
+            var query = Repository.GetAllIncluding(x => x.Class, x => x.WorkShift, x => x.Class.Course);
+            return query;
         }
 
         // Check Class and WorkShift is exists or not
@@ -93,36 +61,15 @@ namespace EMS.Schedules
             throw new EntityNotFoundException("Not found Class");
         }
 
-        // Get All Schedule
-        public override async Task<PagedResultDto<ScheduleDto>> GetAllAsync(PagedScheduleResultRequestDto input)
-        {
-            CheckGetAllPermission();
-            var query = CreateFilteredQuery(input);
-            var totalCount = await AsyncQueryableExecuter.CountAsync(query);
-            query = ApplySorting(query, input);
-            query = ApplyPaging(query, input);
-            var schedules = await AsyncQueryableExecuter.ToListAsync(query);
-            List<ScheduleDto> listScheduleDtos = new();
-            foreach (var schedule in schedules)
-            {
-                var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
-                scheduleDto.Class.Teacher.User.RoleNames = await GetRoleNames(schedule.Class.UserClass);
-                listScheduleDtos.Add(scheduleDto);
-            }
-            return new PagedResultDto<ScheduleDto>(totalCount, listScheduleDtos);
-        }
-
         // Get Schedule
         public override async Task<ScheduleDto> GetAsync(EntityDto<long> input)
         {
             CheckGetPermission();
             var schedule = await Repository.GetAllIncluding(
-                                        x => x.Class, x => x.WorkShift, x => x.Class.UserClass,
-                                        x => x.Class.UserClass.User, x => x.Class.UserClass.User.Roles)
+                                        x => x.Class, x => x.WorkShift, x => x.Class.Course)
                                         .FirstOrDefaultAsync(x => x.Id == input.Id)
                                         ?? throw new EntityNotFoundException("Not found Schedule");
             var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
-            scheduleDto.Class.Teacher.User.RoleNames = await GetRoleNames(schedule.Class.UserClass);
             return scheduleDto;
         }
         // Create new Schedule

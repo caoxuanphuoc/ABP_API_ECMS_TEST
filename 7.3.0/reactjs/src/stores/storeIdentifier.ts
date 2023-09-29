@@ -14,4 +14,6 @@ export default class Stores {
   static WorkShiftStore = 'workShiftStore';
 
   static CourseStore = 'courseStore';
+
+  static ClassStore = 'classStore';
 }

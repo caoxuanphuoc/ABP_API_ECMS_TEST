@@ -1,42 +1,46 @@
 import { inject, observer } from 'mobx-react';
-import { Button, Card, Col, Dropdown, Input, Menu, Modal, Row, Table } from 'antd';
-import React from 'react';
-import { FormInstance } from 'antd/lib/form';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Dropdown, Input, Menu, Modal, Row, Table, Tag } from 'antd';
 import moment from 'moment';
-import WorkShiftStore from '../../stores/workShiftStore';
+import { FormInstance } from 'antd/lib/form';
+import React from 'react';
+import ClassStore from '../../stores/classStore';
+import CourseStore from '../../stores/courseStore';
 import Stores from '../../stores/storeIdentifier';
 import AppComponentBase from '../../components/AppComponentBase';
 import { EntityDto } from '../../services/dto/entityDto';
 import { L } from '../../lib/abpUtility';
-import CreateOrUpdateWorkShift from './components/createOrUpdateWorkShift';
+import CreateOrUpdateClass from './components/createOrUpdateClass';
 
-export interface IWorkShiftProps {
-  workShiftStore: WorkShiftStore;
+export interface IClassProps {
+  classStore: ClassStore;
+  courseStore: CourseStore;
 }
 
-export interface IWorkShiftState {
+export interface IClassState {
   modalVisible: boolean;
   maxResultCount: number;
   skipCount: number;
-  workShiftId: number;
+  classId: number;
   filter: string;
+  selectedCourseId: number;
 }
 
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.WorkShiftStore)
+@inject(Stores.ClassStore, Stores.CourseStore)
 @observer
-class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
+class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();
 
   state = {
     modalVisible: false,
     maxResultCount: 10,
     skipCount: 0,
-    workShiftId: 0,
+    classId: 0,
     filter: '',
+    selectedCourseId: 0,
   };
 
   async componentDidMount() {
@@ -44,7 +48,7 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
   }
 
   async getAll() {
-    await this.props.workShiftStore.getAll({
+    await this.props.classStore.getAll({
       maxResultCount: this.state.maxResultCount,
       skipCount: this.state.skipCount,
       keyword: this.state.filter,
@@ -68,18 +72,19 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
 
   async createOrUpdateModalOpen(entityDto: EntityDto) {
     if (entityDto.id === 0) {
-      await this.props.workShiftStore.createWorkShift();
+        await this.props.classStore.createClass();
     } else {
-      await this.props.workShiftStore.get(entityDto);
+      await this.props.classStore.get(entityDto);
     }
 
-    this.setState({ workShiftId: entityDto.id });
+    this.setState({
+      selectedCourseId: this.props.classStore.editClass?.course?.id,
+      classId: entityDto.id,
+    });
     this.Modal();
+
     setTimeout(() => {
-      this.formRef.current?.setFieldsValue({
-        ...this.props.workShiftStore.editWorkShift,
-        timeStart: moment(this.props.workShiftStore.editWorkShift.timeStart, 'HH:mm'),
-      });
+      this.formRef.current?.setFieldsValue({ ...this.props.classStore.editClass });
     }, 100);
   }
 
@@ -88,7 +93,7 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
     confirm({
       title: 'Do you want to delete these items?',
       onOk() {
-        self.props.workShiftStore.delete(input);
+        self.props.classStore.delete(input);
       },
     });
   }
@@ -97,13 +102,10 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
     const form = this.formRef.current;
 
     form!.validateFields().then(async (values: any) => {
-      const updatedValues = { ...values };
-      updatedValues.timeStart = values.timeStart.format('HH:mm');
-      updatedValues.timeEnd = values.timeEnd.format('HH:mm');
-      if (this.state.workShiftId === 0) {
-        await this.props.workShiftStore.create(updatedValues);
+      if (this.state.classId === 0) {
+        await this.props.classStore.create(values);
       } else {
-        await this.props.workShiftStore.update({ ...updatedValues, id: this.state.workShiftId });
+        await this.props.classStore.update({ ...values, id: this.state.classId });
       }
 
       await this.getAll();
@@ -117,28 +119,50 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
   };
 
   public render() {
-    const { workShifts } = this.props.workShiftStore;
+    const { classes } = this.props.classStore;
     const columns = [
       {
-        title: L('Code'),
-        dataIndex: 'code',
-        key: 'code',
+        title: L('StartDate'),
+        dataIndex: 'startDate',
+        key: 'startDate',
+        with: 150,
+        render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
+      },
+      {
+        title: L('EndDate'),
+        dataIndex: 'endDate',
+        key: 'endDate',
+        with: 150,
+        render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
+      },
+      {
+        title: L('LimitStudent'),
+        dataIndex: 'limitStudent',
+        key: 'limitStudent',
         with: 150,
         render: (text: string) => <div>{text}</div>,
       },
       {
-        title: L('TimeStart'),
-        dataIndex: 'timeStart',
-        key: 'timeStart',
-        with: 350,
-        render: (text: string) => <div>{moment(text).format('HH:mm')}</div>,
+        title: L('CurrentStudent'),
+        dataIndex: 'currentStudent',
+        key: 'currentStudent',
+        with: 150,
+        render: (text: string) => <div>{text}</div>,
       },
       {
-        title: L('TimeEnd'),
-        dataIndex: 'timeEnd',
-        key: 'timeEnd',
-        with: 350,
-        render: (text: string) => <div>{moment(text).format('HH:mm')}</div>,
+        title: L('LessionTimes'),
+        dataIndex: 'lessionTimes',
+        key: 'lessionTimes',
+        with: 150,
+        redner: (text: string) => <div>{text}</div>,
+      },
+      {
+        title: L('IsActive'),
+        dataIndex: 'isActive',
+        key: 'isActive',
+        width: 150,
+        render: (text: boolean) =>
+          text === true ? <Tag color="#2db7f5">{L('Yes')}</Tag> : <Tag color="red">{L('No')}</Tag>,
       },
       {
         title: L('Actions'),
@@ -178,7 +202,7 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
             xxl={{ span: 2, offset: 0 }}
           >
             {' '}
-            <h2>{L('WorkShifts')}</h2>
+            <h2>{L('Classes')}</h2>
           </Col>
           <Col
             xs={{ span: 14, offset: 0 }}
@@ -216,16 +240,16 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
               columns={columns}
               pagination={{
                 pageSize: 10,
-                total: workShifts === undefined ? 0 : workShifts.totalCount,
+                total: classes === undefined ? 0 : classes.totalCount,
                 defaultCurrent: 1,
               }}
-              loading={workShifts === undefined ? true : false}
-              dataSource={workShifts === undefined ? [] : workShifts.items}
+              loading={classes === undefined}
+              dataSource={classes === undefined ? [] : classes.items}
               onChange={this.handleTableChange}
             />
           </Col>
         </Row>
-        <CreateOrUpdateWorkShift
+        <CreateOrUpdateClass
           formRef={this.formRef}
           visible={this.state.modalVisible}
           onCancel={() => {
@@ -234,12 +258,14 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
             });
             this.formRef.current?.resetFields();
           }}
-          modalType={this.state.workShiftId === 0 ? 'edit' : 'create'}
+          modalType={this.state.classId === 0 ? 'create' : 'edit'}
           onCreate={this.handleCreate}
+          courseStore={this.props.courseStore}
+          selectedCourseId={this.state.selectedCourseId}
         />
       </Card>
     );
   }
 }
 
-export default WorkShift;
+export default ClassRoom;

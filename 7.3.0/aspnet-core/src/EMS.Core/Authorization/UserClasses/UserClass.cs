@@ -18,7 +18,9 @@ namespace EMS.Authorization.UserClasses
         [ForeignKey("User")]
         public long UserId { get; set; }
         public User User { get; set; }
-        public ICollection<Class> Classes { get; set; }
+        [ForeignKey("Class")]
+        public long ClassId { get; set; }
+        public Class Class { get; set; }
         public ICollection<TuitionFee> TuitionFees { get; set; }
         public ICollection<TrackingClass> TrackingClasses { get; set; }
     }
