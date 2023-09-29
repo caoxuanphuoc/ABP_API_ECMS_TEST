@@ -7,6 +7,8 @@ import AccountStore from './accountStore';
 import WorkShiftStore from './workShiftStore';
 import CourseStore from './courseStore';
 import ClassStore from './classStore';
+import PositionStore from './positionStore';
+import ScheduleStore from './scheduleStore';
 
 export default function initializeStores() {
   return {
@@ -19,5 +21,7 @@ export default function initializeStores() {
     workShiftStore: new WorkShiftStore(),
     courseStore: new CourseStore(),
     classStore: new ClassStore(),
+    positionStore: new PositionStore(),
+    scheduleStore: new ScheduleStore(),
   };
 }
