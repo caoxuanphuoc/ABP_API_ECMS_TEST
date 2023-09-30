@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace EMS.UserClasses
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class UserClassAppService : AsyncCrudAppService<UserClass, UserClassDto, long, PagedUserClassResultRequestDto, CreateOrUpdateUserClassDto, CreateOrUpdateUserClassDto>, IUserClassAppService
+    public class UserClassAppService : AsyncCrudAppService<UserClass, UserClassDto, long, PagedUserClassResultRequestDto, CreateUserClassDto, CreateOrUpdateUserClassDto>, IUserClassAppService
     {
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
@@ -45,24 +45,36 @@ namespace EMS.UserClasses
         }
 
         // Kiểm tra xem User có tồn tại hay không
-        protected async Task<User> GetEntitiesAsync(CreateOrUpdateUserClassDto input)
+        protected async Task<User> GetEntitiesAsync(long UserId)
         {
-            var user = await _userManager.GetUserByIdAsync(input.UserId);
+            var user = await _userManager.GetUserByIdAsync(UserId);
             if (user != null && user.IsActive && !user.IsDeleted)
             {
                 return user;
             }
             throw new EntityNotFoundException("Not found User");
         }
+        // Kiểm tra xem Class có tồn tại hay không
+        protected async Task<Class> GetClassEntitiesAsync(long ClassId)
+        {
+            var Eclass = await _classRepository.GetAsync(ClassId);
+            if (Eclass != null && Eclass.IsActive && !Eclass.IsDeleted)
+            {
+                return Eclass;
+            }
+            throw new EntityNotFoundException("Not found Class");
+        }
 
         // Create new UserClass
-        public override async Task<UserClassDto> CreateAsync(CreateOrUpdateUserClassDto input)
+        public override async Task<UserClassDto> CreateAsync(CreateUserClassDto input)
         {
             CheckCreatePermission();
-            var user = await GetEntitiesAsync(input);
+            var user = await GetEntitiesAsync(input.UserId);
+            var EClass = await GetClassEntitiesAsync(input.ClassId);
             var userClass = new UserClass
             {
                 User = user,
+                Class = EClass,
                 OffTimes = input.OffTimes,
                 DateStart = input.DateStart,
                 IsActive = input.IsActive,
@@ -146,7 +158,7 @@ namespace EMS.UserClasses
         {
             CheckUpdatePermission();
             var userClass = await Repository.GetAsync(input.Id);
-            var user = await GetEntitiesAsync(input);
+            var user = await GetEntitiesAsync(input.UserId);
             userClass.User = user;
             userClass.OffTimes = input.OffTimes;
             userClass.DateStart = input.DateStart;
