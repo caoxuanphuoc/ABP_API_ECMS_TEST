@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EMS.Migrations
 {
-    public partial class InitalDb : Migration
+    public partial class Init_DB_V1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
