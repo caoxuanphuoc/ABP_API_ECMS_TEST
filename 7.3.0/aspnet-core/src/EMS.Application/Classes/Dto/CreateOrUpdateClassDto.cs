@@ -10,6 +10,8 @@ namespace EMS.Classes.Dto
     public class CreateOrUpdateClassDto : EntityDto<long>
     {
         [Required]
+        public string Code { get; set; }
+        [Required]
         public long CourseId { get; set; }
         [Required]
         public DateTime StartDate { get; set; }

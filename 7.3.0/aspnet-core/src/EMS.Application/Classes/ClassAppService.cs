@@ -8,9 +8,7 @@ using Abp.UI;
 using EMS.Authorization;
 using EMS.Authorization.Classes;
 using EMS.Authorization.Courses;
-using EMS.Authorization.Roles;
 using EMS.Authorization.Schedules;
-using EMS.Authorization.UserClasses;
 using EMS.Classes.Dto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -21,36 +19,17 @@ namespace EMS.Classes
     [AbpAuthorize(PermissionNames.Pages_Users)]
     public class ClassAppService : AsyncCrudAppService<Class, ClassDto, long, PagedClassResultRequestDto, CreateOrUpdateClassDto, CreateOrUpdateClassDto>, IClassAppService
     {
-        private readonly RoleManager _roleManager;
         private readonly IRepository<Schedule, long> _scheduleRepository;
-        private readonly IRepository<UserClass, long> _userClassRepository;
         private readonly IRepository<Course, long> _courseRepository;
         public ClassAppService(
             IRepository<Class, long> repository,
-            RoleManager roleManager,
             IRepository<Schedule, long> scheduleRepository,
-            IRepository<UserClass, long> userClassRepository,
             IRepository<Course, long> courseRepository)
             : base(repository)
         {
-            _roleManager = roleManager;
             _scheduleRepository = scheduleRepository;
-            _userClassRepository = userClassRepository;
             _courseRepository = courseRepository;
         }
-
-        // Get RoleNames from AbpRoles
-        //protected async Task<String[]> GetRoleNames(Class classRoom)
-        //{
-        //    var roles = classRoom.UserClass.User.Roles;
-        //    List<string> roleNames = new();
-        //    foreach (var role in roles)
-        //    {
-        //        var roleName = await _roleManager.FindByIdAsync(role.RoleId.ToString());
-        //        roleNames.Add(roleName.Name);
-        //    }
-        //    return roleNames.ToArray();
-        //}
         // Create Query
         protected override IQueryable<Class> CreateFilteredQuery(PagedClassResultRequestDto input)
         {
@@ -58,7 +37,9 @@ namespace EMS.Classes
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
-                query = query.Where(x => x.LimitStudent.ToString() == input.Keyword && x.IsActive);
+                query = query.Where(x => x.LimitStudent.ToString() == input.Keyword ||
+                                        x.Code.ToLower().Contains(input.Keyword.ToLower())
+                                        && x.IsActive);
             }
             else
             {
@@ -82,24 +63,6 @@ namespace EMS.Classes
             return course;
             throw new EntityNotFoundException("Not found UserClass");
         }
-        // Get All Class (để tạm sau này nếu thêm thuộc tính liên quan đến User thì sẽ sử dụng)
-        //public override async Task<PagedResultDto<ClassDto>> GetAllAsync(PagedClassResultRequestDto input)
-        //{
-        //    CheckGetAllPermission();
-        //    var query = CreateFilteredQuery(input);
-        //    var totalCount = await AsyncQueryableExecuter.CountAsync(query);
-        //    query = ApplySorting(query, input);
-        //    query = ApplyPaging(query, input);
-        //    var classes = await AsyncQueryableExecuter.ToListAsync(query);
-        //    List<ClassDto> listClassDtos = new();
-        //    foreach (var classRoom in classes)
-        //    {
-        //        var classDto = ObjectMapper.Map<ClassDto>(classRoom);
-        //        classDto.Teacher.User.RoleNames = await GetRoleNames(classRoom);
-        //        listClassDtos.Add(classDto);
-        //    }
-        //    return new PagedResultDto<ClassDto>(totalCount, listClassDtos);
-        //}
 
         // Get Class
         public override async Task<ClassDto> GetAsync(EntityDto<long> input)
@@ -119,6 +82,7 @@ namespace EMS.Classes
             var course = await GetEntitiesAsync(input);
             var classRoom = new Class
             {
+                Code = input.Code,
                 CourseId = course.Id,
                 StartDate = input.StartDate,
                 EndDate = input.EndDate,
@@ -138,6 +102,7 @@ namespace EMS.Classes
             CheckUpdatePermission();
             var course = await GetEntitiesAsync(input);
             var classRoom = await Repository.GetAsync(input.Id);
+            classRoom.Code = input.Code;
             classRoom.Course = course;
             classRoom.StartDate = input.StartDate;
             classRoom.EndDate = input.EndDate;

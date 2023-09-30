@@ -11,10 +11,17 @@ import AppComponentBase from '../../components/AppComponentBase';
 import { EntityDto } from '../../services/dto/entityDto';
 import { L } from '../../lib/abpUtility';
 import CreateOrUpdateClass from './components/createOrUpdateClass';
+import { CourseCreen } from './components/Courses/courseScreen';
+import Course from './components/Courses/course';
+import ScheduleStore from '../../stores/scheduleStore';
+import Schedule from './components/Schedules/Schedule';
+import WorkShiftStore from '../../stores/workShiftStore';
 
 export interface IClassProps {
   classStore: ClassStore;
   courseStore: CourseStore;
+  scheduleStore: ScheduleStore;
+  workShiftStore: WorkShiftStore;
 }
 
 export interface IClassState {
@@ -24,12 +31,15 @@ export interface IClassState {
   classId: number;
   filter: string;
   selectedCourseId: number;
+  course: CourseCreen;
+  modalVisibleCourse: boolean;
+  modalVisibleSchedule: boolean;
 }
 
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.ClassStore, Stores.CourseStore)
+@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore, Stores.WorkShiftStore)
 @observer
 class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();
@@ -41,6 +51,17 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     classId: 0,
     filter: '',
     selectedCourseId: 0,
+    course: {
+      code: '',
+      courseName: '',
+      courseFee: 0,
+      quantity: 0,
+      limitStudent: 0,
+      currentStudent: 0,
+      lessionTimes: 0,
+    },
+    modalVisibleCourse: false,
+    modalVisibleSchedule: false,
   };
 
   async componentDidMount() {
@@ -70,9 +91,64 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     });
   };
 
+  ModalCourse = () => {
+    this.setState({
+      modalVisibleCourse: !this.state.modalVisibleCourse,
+    });
+  };
+
+  ModalSchedule = () => {
+    this.setState({
+      modalVisibleSchedule: !this.state.modalVisibleSchedule,
+    });
+  };
+
+  async getCourse(
+    id: EntityDto,
+    code: any,
+    limitStudent: any,
+    currentStudent: any,
+    lessionTimes: any
+  ) {
+    const { course } = this.state;
+    const { courseStore } = this.props;
+    await courseStore.get(id);
+
+    const result = courseStore.editCourse;
+
+    const updateCourse = {
+      ...course,
+      code: code.code,
+      courseName: result.courseName,
+      courseFee: result.courseFee,
+      quatity: result.quantity,
+      limitStudent: limitStudent.limitStudent,
+      currentStudent: currentStudent.currentStudent,
+      lessionTimes: lessionTimes.lessionTimes,
+    };
+    this.setState({ course: updateCourse });
+    this.ModalCourse();
+  }
+
+  async getSchedule(id: EntityDto, code: any) {
+    const { course } = this.state;
+    const { courseStore } = this.props;
+    await courseStore.get(id);
+
+    const result = courseStore.editCourse;
+
+    const updateCourse = {
+      ...course,
+      code: code.code,
+      courseName: result.courseName,
+    };
+    this.setState({ course: updateCourse });
+    this.ModalSchedule();
+  }
+
   async createOrUpdateModalOpen(entityDto: EntityDto) {
     if (entityDto.id === 0) {
-        await this.props.classStore.createClass();
+      await this.props.classStore.createClass();
     } else {
       await this.props.classStore.get(entityDto);
     }
@@ -122,6 +198,13 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     const { classes } = this.props.classStore;
     const columns = [
       {
+        title: L('Code'),
+        dataIndex: 'code',
+        key: 'code',
+        with: 150,
+        render: (text: string) => <div>{text}</div>,
+      },
+      {
         title: L('StartDate'),
         dataIndex: 'startDate',
         key: 'startDate',
@@ -134,27 +217,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
         key: 'endDate',
         with: 150,
         render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
-      },
-      {
-        title: L('LimitStudent'),
-        dataIndex: 'limitStudent',
-        key: 'limitStudent',
-        with: 150,
-        render: (text: string) => <div>{text}</div>,
-      },
-      {
-        title: L('CurrentStudent'),
-        dataIndex: 'currentStudent',
-        key: 'currentStudent',
-        with: 150,
-        render: (text: string) => <div>{text}</div>,
-      },
-      {
-        title: L('LessionTimes'),
-        dataIndex: 'lessionTimes',
-        key: 'lessionTimes',
-        with: 150,
-        redner: (text: string) => <div>{text}</div>,
       },
       {
         title: L('IsActive'),
@@ -177,6 +239,22 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                     {L('Edit')}
                   </Menu.Item>
                   <Menu.Item onClick={() => this.delete({ id: item.id })}>{L('Delete')}</Menu.Item>
+                  <Menu.Item
+                    onClick={() =>
+                      this.getCourse(
+                        { id: item.id },
+                        { code: item.code },
+                        { limitStudent: item.limitStudent },
+                        { currentStudent: item.currentStudent },
+                        { lessionTimes: item.lessionTimes }
+                      )
+                    }
+                  >
+                    {L('Course')}
+                  </Menu.Item>
+                  <Menu.Item onClick={() => this.getSchedule({ id: item.id }, { code: item.code })}>
+                    {L('Schedule')}
+                  </Menu.Item>
                 </Menu>
               }
               placement="bottomLeft"
@@ -262,6 +340,26 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           onCreate={this.handleCreate}
           courseStore={this.props.courseStore}
           selectedCourseId={this.state.selectedCourseId}
+        />
+        <Course
+          visible={this.state.modalVisibleCourse}
+          onCancel={() => {
+            this.setState({
+              modalVisibleCourse: false,
+            });
+          }}
+          course={this.state.course}
+        />
+        <Schedule
+          visible={this.state.modalVisibleSchedule}
+          onCancel={() => {
+            this.setState({
+              modalVisibleSchedule: false,
+            });
+          }}
+          scheduleStore={this.props.scheduleStore}
+          classId={this.state.classId}
+          course={this.state.course}
         />
       </Card>
     );

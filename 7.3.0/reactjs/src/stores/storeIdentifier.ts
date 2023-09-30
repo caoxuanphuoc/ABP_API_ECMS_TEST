@@ -16,4 +16,8 @@ export default class Stores {
   static CourseStore = 'courseStore';
 
   static ClassStore = 'classStore';
+
+  static PositionStore = 'positionStore';
+
+  static ScheduleStore = 'scheduleStore';
 }

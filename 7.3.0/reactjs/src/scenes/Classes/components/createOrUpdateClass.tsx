@@ -145,6 +145,9 @@ class CreateOrUpdateClass extends React.Component<
             courseId: modalType === 'create' ? 'Select Course' : selectedCourseId,
           }}
         >
+          <Form.Item label={L('Code')} {...formItemLayout} name="code" rules={rules.code}>
+            <Input />
+          </Form.Item>
           <Form.Item
             label={L('Course')}
             {...formItemLayout}

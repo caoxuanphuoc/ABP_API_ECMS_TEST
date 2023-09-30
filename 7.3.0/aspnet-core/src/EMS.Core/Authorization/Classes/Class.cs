@@ -11,6 +11,7 @@ namespace EMS.Authorization.Classes
     [Table("AbpClass")]
     public class Class : FullAuditedEntity<long>
     {
+        public string Code { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public long LimitStudent { get; set; }

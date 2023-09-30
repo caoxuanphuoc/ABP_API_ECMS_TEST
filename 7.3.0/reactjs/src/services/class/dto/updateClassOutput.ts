@@ -1,6 +1,7 @@
-import { GetCourseOutput } from "../../course/dto/getCourseOutput";
+import { GetCourseOutput } from '../../course/dto/getCourseOutput';
 
 export interface UpdateClassOutput {
+  code: string;
   course: GetCourseOutput;
   startDate: Date;
   endDate: Date;
