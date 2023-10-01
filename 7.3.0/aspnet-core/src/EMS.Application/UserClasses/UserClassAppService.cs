@@ -100,7 +100,7 @@ namespace EMS.UserClasses
         // Create Query
         protected override IQueryable<UserClass> CreateFilteredQuery(PagedUserClassResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles);
+            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.Position);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
@@ -161,12 +161,46 @@ namespace EMS.UserClasses
             CheckDeletePermission();
             var tuitionFeeCount = await _tuitionFeeRepository.CountAsync(x => x.StudentId == input.Id);
             var trackingClassCount = await _trackingClassRepository.CountAsync(x => x.StudentId == input.Id);
-            var classCount = await _classRepository.CountAsync(x => x.TeacherId == input.Id);
-            if (tuitionFeeCount > 0 || trackingClassCount > 0 || classCount > 0)
+            if (tuitionFeeCount > 0 || trackingClassCount > 0)
             {
                 throw new UserFriendlyException($"UseClass is being used with id = {input.Id}");
             }
             await base.DeleteAsync(input);
+        }
+        protected IQueryable<UserClass> CreateFilteredQueryWithClassId(PagedUserClassResultRequestDto input, long classId)
+        {
+            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.Position);
+
+            if (!input.Keyword.IsNullOrWhiteSpace())
+            {
+                query = query.Where(x => x.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.ClassId == classId
+                                        && x.User.IsActive && x.IsActive);
+            }
+            else
+            {
+                query = query.Where(x => x.User.IsActive && x.IsActive && x.ClassId == classId);
+            }
+            return query;
+        }
+        public async Task<PagedResultDto<UserClassDto>> GetAllWithClassIdFilter(PagedUserClassResultRequestDto input, long classId)
+        {
+            CheckGetAllPermission();
+            var query = CreateFilteredQueryWithClassId(input, classId);
+            var totalCount = await AsyncQueryableExecuter.CountAsync(query);
+            query = ApplySorting(query, input);
+            query = ApplyPaging(query, input);
+            var userClasses = await AsyncQueryableExecuter.ToListAsync(query);
+            List<UserClassDto> listUserClassDtos = new();
+            foreach (var userClass in userClasses)
+            {
+                var userClassDto = ObjectMapper.Map<UserClassDto>(userClass);
+                userClassDto.User.RoleNames = await GetRoleNames(userClass);
+                listUserClassDtos.Add(userClassDto);
+            }
+            return new PagedResultDto<UserClassDto>(totalCount, listUserClassDtos);
         }
     }
 }

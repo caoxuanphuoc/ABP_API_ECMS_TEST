@@ -6,6 +6,8 @@ import {
   InfoCircleOutlined,
   ClockCircleOutlined,
   BookOutlined,
+  UsergroupAddOutlined,
+  ContactsOutlined,
 } from '@ant-design/icons';
 import LoadableComponent from './../Loadable/index';
 
@@ -73,6 +75,24 @@ export const appRouters: any = [
     icon: AppstoreOutlined,
     showInMenu: true,
     component: LoadableComponent(() => import('../../scenes/Tenants')),
+  },
+  {
+    path: '/classes',
+    permission: 'Pages.Users',
+    title: 'Classes',
+    name: 'class',
+    icon: UsergroupAddOutlined,
+    showInMenu: true,
+    component: LoadableComponent(() => import('../../scenes/Classes')),
+  },
+  {
+    path: '/postions',
+    permission: 'Pages.Users',
+    title: 'Positions',
+    name: 'position',
+    icon: ContactsOutlined,
+    showInMenu: true,
+    component: LoadableComponent(() => import('../../scenes/Positions')),
   },
   {
     path: '/courses',
