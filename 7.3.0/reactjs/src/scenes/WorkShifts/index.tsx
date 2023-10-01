@@ -75,11 +75,9 @@ class WorkShift extends AppComponentBase<IWorkShiftProps, IWorkShiftState> {
 
     this.setState({ workShiftId: entityDto.id });
     this.Modal();
+
     setTimeout(() => {
-      this.formRef.current?.setFieldsValue({
-        ...this.props.workShiftStore.editWorkShift,
-        timeStart: moment(this.props.workShiftStore.editWorkShift.timeStart, 'HH:mm'),
-      });
+      this.formRef.current?.setFieldsValue({ ...this.props.workShiftStore.editWorkShift });
     }, 100);
   }
 
