@@ -51,7 +51,7 @@ class CreateOrUpdateWorkShift extends React.Component<
         xxl: { span: 18 },
       },
     };
-
+    
     return (
       <Modal
         visible={visible}
@@ -67,46 +67,20 @@ class CreateOrUpdateWorkShift extends React.Component<
             <Input />
           </Form.Item>
           <Form.Item
-            valuePropName={type}
             label={L('TimeStart')}
             {...formItemLayout}
             name="timeStart"
-            rules={[
-              {
-                required: true,
-                message: 'Please select a start time',
-              },
-              {
-                validator: (rule, value) => {
-                  if (!value || !value.isValid || !value.isValid()) {
-                    return Promise.reject('Please select a valid start time');
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
+            rules={rules.timeStart}
+            valuePropName={type}
           >
             <TimePicker format="HH:mm" />
           </Form.Item>
           <Form.Item
-            valuePropName={type}
             label={L('TimeEnd')}
             {...formItemLayout}
             name="timeEnd"
-            rules={[
-              {
-                required: true,
-                message: 'Please select a end time',
-              },
-              {
-                validator: (rule, value) => {
-                  if (!value || !value.isValid || !value.isValid()) {
-                    return Promise.reject('Please select a valid end time');
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
+            rules={rules.timeEnd}
+            valuePropName={type}
           >
             <TimePicker format="HH:mm" />
           </Form.Item>

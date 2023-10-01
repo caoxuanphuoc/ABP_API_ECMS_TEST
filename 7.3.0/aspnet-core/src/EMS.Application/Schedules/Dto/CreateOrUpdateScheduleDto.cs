@@ -10,10 +10,10 @@ namespace EMS.Schedules.Dto
     public class CreateOrUpdateScheduleDto : EntityDto<long>
     {
         [Required]
-        public DateTime Date { get; set; }
-        [Required]
         public long ClassId { get; set; }
         [Required]
         public long WorkShiftId { get; set; }
+        [Required]
+        public DateTime Date { get; set; }
     }
 }
