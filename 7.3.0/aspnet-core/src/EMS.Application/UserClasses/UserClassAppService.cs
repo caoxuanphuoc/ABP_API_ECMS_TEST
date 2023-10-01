@@ -7,6 +7,7 @@ using Abp.Extensions;
 using Abp.UI;
 using EMS.Authorization;
 using EMS.Authorization.Classes;
+using EMS.Authorization.Positions;
 using EMS.Authorization.Roles;
 using EMS.Authorization.TrackingClasses;
 using EMS.Authorization.TuitionFees;
@@ -22,47 +23,74 @@ using System.Threading.Tasks;
 namespace EMS.UserClasses
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class UserClassAppService : AsyncCrudAppService<UserClass, UserClassDto, long, PagedUserClassResultRequestDto, CreateOrUpdateUserClassDto, CreateOrUpdateUserClassDto>, IUserClassAppService
+    public class UserClassAppService : AsyncCrudAppService<UserClass, UserClassDto, long, PagedUserClassResultRequestDto, CreateUserClassDto, CreateOrUpdateUserClassDto>, IUserClassAppService
     {
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
         private readonly IRepository<TuitionFee, long> _tuitionFeeRepository;
         private readonly IRepository<TrackingClass, long> _trackingClassRepository;
         private readonly IRepository<Class, long> _classRepository;
+        private readonly IRepository<Position, long> _PositionRepository;
         public UserClassAppService(
             IRepository<UserClass, long> repository,
             UserManager userManager,
             RoleManager roleManager,
             IRepository<TuitionFee, long> tuitionFeeRepository,
             IRepository<TrackingClass, long> trackingClassRepository,
-            IRepository<Class, long> classRepository) : base(repository)
+            IRepository<Class, long> classRepository,
+            IRepository<Position, long> positionRepository
+            ) : base(repository)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _tuitionFeeRepository = tuitionFeeRepository;
             _trackingClassRepository = trackingClassRepository;
             _classRepository = classRepository;
+            _PositionRepository = positionRepository;
         }
 
         // Kiểm tra xem User có tồn tại hay không
-        protected async Task<User> GetEntitiesAsync(CreateOrUpdateUserClassDto input)
+        protected async Task<User> GetEntitiesAsync(long UserId)
         {
-            var user = await _userManager.GetUserByIdAsync(input.UserId);
+            var user = await _userManager.GetUserByIdAsync(UserId);
             if (user != null && user.IsActive && !user.IsDeleted)
             {
                 return user;
             }
             throw new EntityNotFoundException("Not found User");
         }
+        // Kiểm tra xem Class có tồn tại hay không
+        protected async Task<Class> GetClassEntitiesAsync(long ClassId)
+        {
+            var Eclass = await _classRepository.GetAsync(ClassId);
+            if (Eclass != null && Eclass.IsActive && !Eclass.IsDeleted)
+            {
+                return Eclass;
+            }
+            throw new EntityNotFoundException("Not found Class");
+        }
+        protected async Task<Position> GetPositionEntitiesAsync(long PositionId)
+        {
+            var EPosition = await _PositionRepository.GetAsync(PositionId);
+            if (EPosition != null  && !EPosition.IsDeleted)
+            {
+                return EPosition;
+            }
+            throw new EntityNotFoundException("Not found Position");
+        }
 
         // Create new UserClass
-        public override async Task<UserClassDto> CreateAsync(CreateOrUpdateUserClassDto input)
+        public override async Task<UserClassDto> CreateAsync(CreateUserClassDto input)
         {
             CheckCreatePermission();
-            var user = await GetEntitiesAsync(input);
+            var user = await GetEntitiesAsync(input.UserId);
+            var EClass = await GetClassEntitiesAsync(input.ClassId);
+            var EPosition = await GetPositionEntitiesAsync(input.PositionId);
             var userClass = new UserClass
             {
                 User = user,
+                Class = EClass,
+                Position = EPosition,
                 OffTimes = input.OffTimes,
                 DateStart = input.DateStart,
                 IsActive = input.IsActive,
@@ -100,7 +128,7 @@ namespace EMS.UserClasses
         // Create Query
         protected override IQueryable<UserClass> CreateFilteredQuery(PagedUserClassResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles);
+            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.Position);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
@@ -146,8 +174,13 @@ namespace EMS.UserClasses
         {
             CheckUpdatePermission();
             var userClass = await Repository.GetAsync(input.Id);
-            var user = await GetEntitiesAsync(input);
+            var user = await GetEntitiesAsync(input.UserId);
+            var EClass = await GetClassEntitiesAsync(input.ClassId);
+            var EPosition = await GetPositionEntitiesAsync(input.PositionId);
+
             userClass.User = user;
+            userClass.Class = EClass;
+            userClass.Position = EPosition;
             userClass.OffTimes = input.OffTimes;
             userClass.DateStart = input.DateStart;
             userClass.IsActive = input.IsActive;
@@ -161,12 +194,46 @@ namespace EMS.UserClasses
             CheckDeletePermission();
             var tuitionFeeCount = await _tuitionFeeRepository.CountAsync(x => x.StudentId == input.Id);
             var trackingClassCount = await _trackingClassRepository.CountAsync(x => x.StudentId == input.Id);
-            var classCount = await _classRepository.CountAsync(x => x.TeacherId == input.Id);
-            if (tuitionFeeCount > 0 || trackingClassCount > 0 || classCount > 0)
+            if (tuitionFeeCount > 0 || trackingClassCount > 0)
             {
                 throw new UserFriendlyException($"UseClass is being used with id = {input.Id}");
             }
             await base.DeleteAsync(input);
+        }
+        protected IQueryable<UserClass> CreateFilteredQueryWithClassId(PagedUserClassResultRequestDto input, long classId)
+        {
+            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.Position);
+
+            if (!input.Keyword.IsNullOrWhiteSpace())
+            {
+                query = query.Where(x => x.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.ClassId == classId
+                                        && x.User.IsActive && x.IsActive);
+            }
+            else
+            {
+                query = query.Where(x => x.User.IsActive && x.IsActive && x.ClassId == classId);
+            }
+            return query;
+        }
+        public async Task<PagedResultDto<UserClassDto>> GetAllWithClassIdFilter(PagedUserClassResultRequestDto input, long classId)
+        {
+            CheckGetAllPermission();
+            var query = CreateFilteredQueryWithClassId(input, classId);
+            var totalCount = await AsyncQueryableExecuter.CountAsync(query);
+            query = ApplySorting(query, input);
+            query = ApplyPaging(query, input);
+            var userClasses = await AsyncQueryableExecuter.ToListAsync(query);
+            List<UserClassDto> listUserClassDtos = new();
+            foreach (var userClass in userClasses)
+            {
+                var userClassDto = ObjectMapper.Map<UserClassDto>(userClass);
+                userClassDto.User.RoleNames = await GetRoleNames(userClass);
+                listUserClassDtos.Add(userClassDto);
+            }
+            return new PagedResultDto<UserClassDto>(totalCount, listUserClassDtos);
         }
     }
 }

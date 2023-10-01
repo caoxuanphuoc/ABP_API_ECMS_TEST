@@ -10,9 +10,9 @@ namespace EMS.Classes.Dto
     public class CreateOrUpdateClassDto : EntityDto<long>
     {
         [Required]
-        public long CourseId { get; set; }
+        public string Code { get; set; }
         [Required]
-        public long TeacherId { get; set; }
+        public long CourseId { get; set; }
         [Required]
         public DateTime StartDate { get; set; }
         [Required]
@@ -22,9 +22,7 @@ namespace EMS.Classes.Dto
         [Required]
         public long CurrentStudent { get; set; }
         [Required]
-        public DateTime LessionTimes { get; set; }
-        [Required]
-        public DateTime CycleTimes { get; set; }
+        public int LessionTimes { get; set; }
         [Required]
         public bool IsActive { get; set; }
     }
