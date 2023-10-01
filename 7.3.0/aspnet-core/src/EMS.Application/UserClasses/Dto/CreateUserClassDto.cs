@@ -17,6 +17,8 @@ namespace EMS.UserClasses.Dto
         [Required]
         public long ClassId { get; set; }
         [Required]
+        public long PositionId { get; set; }
+        [Required]
         public int OffTimes { get; set; }
         [Required]
         public DateTime DateStart { get; set; }

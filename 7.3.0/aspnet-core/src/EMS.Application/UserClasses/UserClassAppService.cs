@@ -7,6 +7,7 @@ using Abp.Extensions;
 using Abp.UI;
 using EMS.Authorization;
 using EMS.Authorization.Classes;
+using EMS.Authorization.Positions;
 using EMS.Authorization.Roles;
 using EMS.Authorization.TrackingClasses;
 using EMS.Authorization.TuitionFees;
@@ -29,19 +30,23 @@ namespace EMS.UserClasses
         private readonly IRepository<TuitionFee, long> _tuitionFeeRepository;
         private readonly IRepository<TrackingClass, long> _trackingClassRepository;
         private readonly IRepository<Class, long> _classRepository;
+        private readonly IRepository<Position, long> _PositionRepository;
         public UserClassAppService(
             IRepository<UserClass, long> repository,
             UserManager userManager,
             RoleManager roleManager,
             IRepository<TuitionFee, long> tuitionFeeRepository,
             IRepository<TrackingClass, long> trackingClassRepository,
-            IRepository<Class, long> classRepository) : base(repository)
+            IRepository<Class, long> classRepository,
+            IRepository<Position, long> positionRepository
+            ) : base(repository)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _tuitionFeeRepository = tuitionFeeRepository;
             _trackingClassRepository = trackingClassRepository;
             _classRepository = classRepository;
+            _PositionRepository = positionRepository;
         }
 
         // Kiểm tra xem User có tồn tại hay không
@@ -64,6 +69,15 @@ namespace EMS.UserClasses
             }
             throw new EntityNotFoundException("Not found Class");
         }
+        protected async Task<Position> GetPositionEntitiesAsync(long PositionId)
+        {
+            var EPosition = await _PositionRepository.GetAsync(PositionId);
+            if (EPosition != null  && !EPosition.IsDeleted)
+            {
+                return EPosition;
+            }
+            throw new EntityNotFoundException("Not found Position");
+        }
 
         // Create new UserClass
         public override async Task<UserClassDto> CreateAsync(CreateUserClassDto input)
@@ -71,10 +85,12 @@ namespace EMS.UserClasses
             CheckCreatePermission();
             var user = await GetEntitiesAsync(input.UserId);
             var EClass = await GetClassEntitiesAsync(input.ClassId);
+            var EPosition = await GetPositionEntitiesAsync(input.PositionId);
             var userClass = new UserClass
             {
                 User = user,
                 Class = EClass,
+                Position = EPosition,
                 OffTimes = input.OffTimes,
                 DateStart = input.DateStart,
                 IsActive = input.IsActive,
@@ -159,7 +175,12 @@ namespace EMS.UserClasses
             CheckUpdatePermission();
             var userClass = await Repository.GetAsync(input.Id);
             var user = await GetEntitiesAsync(input.UserId);
+            var EClass = await GetClassEntitiesAsync(input.ClassId);
+            var EPosition = await GetPositionEntitiesAsync(input.PositionId);
+
             userClass.User = user;
+            userClass.Class = EClass;
+            userClass.Position = EPosition;
             userClass.OffTimes = input.OffTimes;
             userClass.DateStart = input.DateStart;
             userClass.IsActive = input.IsActive;
