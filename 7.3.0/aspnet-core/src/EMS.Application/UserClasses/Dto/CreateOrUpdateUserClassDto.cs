@@ -10,7 +10,7 @@ namespace EMS.UserClasses.Dto
     public class CreateOrUpdateUserClassDto : EntityDto<long>
     {
         [Required]
-        public long UserId { get; set; }
+        public long UserId { get; set; } 
         [Required]
         public long ClassId { get; set; }
         [Required]
