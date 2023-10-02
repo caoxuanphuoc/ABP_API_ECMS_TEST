@@ -3,6 +3,7 @@ using EMS.Authorization.Classes;
 using EMS.Authorization.Courses;
 using EMS.Authorization.Positions;
 using EMS.Authorization.Roles;
+using EMS.Authorization.Rooms;
 using EMS.Authorization.Schedules;
 using EMS.Authorization.TrackingClasses;
 using EMS.Authorization.TuitionFees;
@@ -24,6 +25,7 @@ namespace EMS.EntityFrameworkCore
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<WorkShift> WorkShifts { get; set; }
+        public DbSet<Room> Rooms { get; set; }
         public DbSet<Position> Positions { get; set; }
         public EMSDbContext(DbContextOptions<EMSDbContext> options)
             : base(options)

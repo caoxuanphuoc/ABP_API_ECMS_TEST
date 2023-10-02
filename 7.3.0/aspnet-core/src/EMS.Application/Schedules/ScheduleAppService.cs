@@ -7,6 +7,7 @@ using Abp.Extensions;
 using EMS.Authorization;
 using EMS.Authorization.Classes;
 using EMS.Authorization.Roles;
+using EMS.Authorization.Rooms;
 using EMS.Authorization.Schedules;
 using EMS.Authorization.WorkShifts;
 using EMS.Schedules.Dto;
@@ -18,21 +19,24 @@ using System.Threading.Tasks;
 namespace EMS.Schedules
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class ScheduleAppService : AsyncCrudAppService<Schedule, ScheduleDto, long, PagedScheduleResultRequestDto, CreateOrUpdateScheduleDto, CreateOrUpdateScheduleDto>, IScheduleAppService
+    public class ScheduleAppService : AsyncCrudAppService<Schedule, ScheduleDto, long, PagedScheduleResultRequestDto, CreateScheduleDto, UpdateScheduleDto>, IScheduleAppService
     {
         private readonly IRepository<Class, long> _classRepository;
         private readonly IRepository<WorkShift, long> _workShiftRepository;
+        private readonly IRepository<Room, int> _roomRepository;
         private readonly RoleManager _roleManager;
         public ScheduleAppService(
             IRepository<Schedule, long> repository,
             IRepository<Class, long> classRepository,
             IRepository<WorkShift, long> workShiftRepository,
-            RoleManager roleManager)
+            IRepository<Room, int> roomRepository,
+        RoleManager roleManager)
             : base(repository)
         {
             _classRepository = classRepository;
             _workShiftRepository = workShiftRepository;
             _roleManager = roleManager;
+            _roomRepository = roomRepository;
         }
 
         // Sorting by User
@@ -48,17 +52,33 @@ namespace EMS.Schedules
         }
 
         // Check Class and WorkShift is exists or not
-        protected async Task<(Class classRoom, WorkShift workShift)> GetEntitiesAsync(CreateOrUpdateScheduleDto input)
+        protected async Task<(Class classRoom, WorkShift workShift, Room room)> GetEntitiesAsync(CreateScheduleDto input)
         {
             var classRoom = await _classRepository.GetAsync(input.ClassId);
             var workShift = await _workShiftRepository.GetAsync(input.WorkShiftId);
+            var room  = await _roomRepository.GetAsync(input.RoomId);
             if (classRoom != null && classRoom.IsActive && !classRoom.IsDeleted)
             {
                 if (workShift == null || (workShift != null && workShift.IsDeleted))
                 {
                     throw new EntityNotFoundException("Not Found WorkShift");
                 }
-                return (classRoom, workShift);
+                return (classRoom, workShift, room);
+            }
+            throw new EntityNotFoundException("Not found Class");
+        }
+        protected async Task<(Class classRoom, WorkShift workShift, Room room)> GetEntitiesAsync(UpdateScheduleDto input)
+        {
+            var classRoom = await _classRepository.GetAsync(input.ClassId);
+            var workShift = await _workShiftRepository.GetAsync(input.WorkShiftId);
+            var room = await _roomRepository.GetAsync(input.RoomId);
+            if (classRoom != null && classRoom.IsActive && !classRoom.IsDeleted)
+            {
+                if (workShift == null || (workShift != null && workShift.IsDeleted))
+                {
+                    throw new EntityNotFoundException("Not Found WorkShift");
+                }
+                return (classRoom, workShift, room);
             }
             throw new EntityNotFoundException("Not found Class");
         }
@@ -75,14 +95,15 @@ namespace EMS.Schedules
             return scheduleDto;
         }
         // Create new Schedule
-        public override async Task<ScheduleDto> CreateAsync(CreateOrUpdateScheduleDto input)
+        public override async Task<ScheduleDto> CreateAsync(CreateScheduleDto input)
         {
             CheckCreatePermission();
-            var (classRoom, workShift) = await GetEntitiesAsync(input);
+            var (classRoom, workShift, room) = await GetEntitiesAsync(input);
             var schedule = new Schedule
             {
                 ClassId = classRoom.Id,
                 WorkShiftId = workShift.Id,
+                RoomId = room.Id,
                 Date = input.Date,
             };
             var createSchedule = await Repository.InsertAndGetIdAsync(schedule);
@@ -90,14 +111,15 @@ namespace EMS.Schedules
             return await GetAsync(getCreateScheduleId);
         }
         // Update Schedule
-        public override async Task<ScheduleDto> UpdateAsync(CreateOrUpdateScheduleDto input)
+        public override async Task<ScheduleDto> UpdateAsync(UpdateScheduleDto input)
         {
             CheckUpdatePermission();
-            var (classRoom, workShift) = await GetEntitiesAsync(input);
+            var (classRoom, workShift, room) = await GetEntitiesAsync(input);
             var schedule = await Repository.GetAsync(input.Id);
             schedule.Class = classRoom;
             schedule.WorkShift = workShift;
             schedule.Date = input.Date;
+            schedule.RoomId = room.Id;
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
         }

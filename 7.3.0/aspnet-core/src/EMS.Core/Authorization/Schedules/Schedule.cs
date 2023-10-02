@@ -1,5 +1,6 @@
 ﻿using Abp.Domain.Entities.Auditing;
 using EMS.Authorization.Classes;
+using EMS.Authorization.Rooms;
 using EMS.Authorization.WorkShifts;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,5 +17,8 @@ namespace EMS.Authorization.Schedules
         [ForeignKey("WorkShift")]
         public long WorkShiftId { get; set; }
         public WorkShift WorkShift { get; set; }
+        [ForeignKey("Room")]
+        public int RoomId { get; set; }
+        public Room Room { get; set; }
     }
 }

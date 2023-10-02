@@ -12,6 +12,7 @@ namespace EMS.Authorization.WorkShifts
         public string Code { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
+        public int DateOfWeek { get; set; }
         public ICollection<Schedule> Schedules { get; set; }
     }
 }
