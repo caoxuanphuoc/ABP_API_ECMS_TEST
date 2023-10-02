@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Abp.Application.Services;
+﻿using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Entities;
@@ -15,13 +10,18 @@ using Abp.Localization;
 using Abp.Runtime.Session;
 using Abp.UI;
 using EMS.Authorization;
-using EMS.Authorization.Accounts;
 using EMS.Authorization.Roles;
+using EMS.Authorization.Teachers;
+using EMS.Authorization.UserClasses;
 using EMS.Authorization.Users;
 using EMS.Roles.Dto;
 using EMS.Users.Dto;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EMS.Users
 {
@@ -34,6 +34,8 @@ namespace EMS.Users
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IAbpSession _abpSession;
         private readonly LogInManager _logInManager;
+        private readonly IRepository<Teacher, long> _teacherRepository;
+        private readonly IRepository<UserClass, long> _userClassRepository;
 
         public UserAppService(
             IRepository<User, long> repository,
@@ -42,7 +44,9 @@ namespace EMS.Users
             IRepository<Role> roleRepository,
             IPasswordHasher<User> passwordHasher,
             IAbpSession abpSession,
-            LogInManager logInManager)
+            LogInManager logInManager,
+            IRepository<Teacher, long> teacherRepository,
+            IRepository<UserClass, long> userClassRepository)
             : base(repository)
         {
             _userManager = userManager;
@@ -51,6 +55,8 @@ namespace EMS.Users
             _passwordHasher = passwordHasher;
             _abpSession = abpSession;
             _logInManager = logInManager;
+            _teacherRepository = teacherRepository;
+            _userClassRepository = userClassRepository;
         }
 
         public override async Task<UserDto> CreateAsync(CreateUserDto input)
@@ -96,6 +102,12 @@ namespace EMS.Users
 
         public override async Task DeleteAsync(EntityDto<long> input)
         {
+            var teacherCount = await _teacherRepository.CountAsync(x => x.UserId == input.Id);
+            var userClassCount = await _userClassRepository.CountAsync(x => x.UserId == input.Id);
+            if (teacherCount > 0 || userClassCount > 0)
+            {
+                throw new UserFriendlyException($"Use is being used with id = {input.Id}");
+            }
             var user = await _userManager.GetUserByIdAsync(input.Id);
             await _userManager.DeleteAsync(user);
         }
@@ -112,6 +124,12 @@ namespace EMS.Users
         [AbpAuthorize(PermissionNames.Pages_Users_Activation)]
         public async Task DeActivate(EntityDto<long> user)
         {
+            var teacherCount = await _teacherRepository.CountAsync(x => x.UserId == user.Id);
+            var userClassCount = await _userClassRepository.CountAsync(x => x.UserId == user.Id);
+            if (teacherCount > 0 || userClassCount > 0)
+            {
+                throw new UserFriendlyException($"Use is being used with id = {user.Id}");
+            }
             await Repository.UpdateAsync(user.Id, async (entity) =>
             {
                 entity.IsActive = false;
@@ -196,7 +214,7 @@ namespace EMS.Users
             {
                 throw new Exception("There is no current user!");
             }
-            
+
             if (await _userManager.CheckPasswordAsync(user, input.CurrentPassword))
             {
                 CheckErrors(await _userManager.ChangePasswordAsync(user, input.NewPassword));
@@ -218,19 +236,19 @@ namespace EMS.Users
             {
                 throw new UserFriendlyException("Please log in before attempting to reset password.");
             }
-            
+
             var currentUser = await _userManager.GetUserByIdAsync(_abpSession.GetUserId());
             var loginAsync = await _logInManager.LoginAsync(currentUser.UserName, input.AdminPassword, shouldLockout: false);
             if (loginAsync.Result != AbpLoginResultType.Success)
             {
                 throw new UserFriendlyException("Your 'Admin Password' did not match the one on record.  Please try again.");
             }
-            
+
             if (currentUser.IsDeleted || !currentUser.IsActive)
             {
                 return false;
             }
-            
+
             var roles = await _userManager.GetRolesAsync(currentUser);
             if (!roles.Contains(StaticRoleNames.Tenants.Admin))
             {
