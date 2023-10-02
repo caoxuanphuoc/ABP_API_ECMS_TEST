@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace EMS.TrackingClasses
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class TrackingClassAppService : AsyncCrudAppService<TrackingClass, TrackingClassDto, long, PagedTrackingClassResultRequestDto, CreateOrUpdateTrackingClassDto, CreateOrUpdateTrackingClassDto>, ITrackingClassAppService
+    public class TrackingClassAppService : AsyncCrudAppService<TrackingClass, TrackingClassDto, long, PagedTrackingClassResultRequestDto, CreateTrackingClassDto, UpdateTrackingClassDto>, ITrackingClassAppService
     {
         private readonly IRepository<UserClass, long> _userClassRepository;
         private readonly RoleManager _roleManager;
@@ -71,7 +71,16 @@ namespace EMS.TrackingClasses
         }
 
         // Check UserClass exists or not
-        protected async Task<UserClass> GetEntitiesAsync(CreateOrUpdateTrackingClassDto input)
+        protected async Task<UserClass> GetEntitiesAsync(UpdateTrackingClassDto input)
+        {
+            var userClass = await _userClassRepository.GetAsync(input.StudentId);
+            if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
+            {
+                return userClass;
+            }
+            throw new EntityNotFoundException("Not found UserClass");
+        }
+        protected async Task<UserClass> GetEntitiesAsync(CreateTrackingClassDto input)
         {
             var userClass = await _userClassRepository.GetAsync(input.StudentId);
             if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
@@ -113,7 +122,7 @@ namespace EMS.TrackingClasses
         }
 
         // Create new TrackingClass
-        public override async Task<TrackingClassDto> CreateAsync(CreateOrUpdateTrackingClassDto input)
+        public override async Task<TrackingClassDto> CreateAsync(CreateTrackingClassDto input)
         {
             CheckCreatePermission();
             var userClass = await GetEntitiesAsync(input);
@@ -129,7 +138,7 @@ namespace EMS.TrackingClasses
         }
 
         // Update TrackingClass
-        public override async Task<TrackingClassDto> UpdateAsync(CreateOrUpdateTrackingClassDto input)
+        public override async Task<TrackingClassDto> UpdateAsync(UpdateTrackingClassDto input)
         {
             CheckUpdatePermission();
             var userClass = await GetEntitiesAsync(input);

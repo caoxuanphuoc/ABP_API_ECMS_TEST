@@ -3,7 +3,7 @@ using EMS.TrackingClasses.Dto;
 
 namespace EMS.TrackingClasses
 {
-    public interface ITrackingClassAppService : IAsyncCrudAppService<TrackingClassDto, long, PagedTrackingClassResultRequestDto, CreateOrUpdateTrackingClassDto, CreateOrUpdateTrackingClassDto>
+    public interface ITrackingClassAppService : IAsyncCrudAppService<TrackingClassDto, long, PagedTrackingClassResultRequestDto, CreateTrackingClassDto, UpdateTrackingClassDto>
     {
     }
 }
