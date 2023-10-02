@@ -113,18 +113,20 @@ namespace EMS.UserClasses
         // Create Query
         protected override IQueryable<UserClass> CreateFilteredQuery(PagedUserClassResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class);
+            var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.User.Teachers);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
                 query = query.Where(x => x.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower())
-                                        && x.User.IsActive && x.IsActive && !x.User.IsDeleted);
+                                        x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.User.Teachers.Any(teacher => teacher.SchoolName.ToLower().Contains(input.Keyword.ToLower())) ||
+                                        x.User.Teachers.Any(teacher => teacher.Certificate.ToLower().Contains(input.Keyword.ToLower()))
+                                        && x.User.IsActive && !x.User.IsDeleted);
             }
             else
             {
-                query = query.Where(x => x.User.IsActive && x.IsActive && !x.User.IsDeleted);
+                query = query.Where(x => x.User.IsActive && !x.User.IsDeleted);
             }
             return query;
         }
@@ -132,7 +134,7 @@ namespace EMS.UserClasses
         // Sorting by User
         protected override IQueryable<UserClass> ApplySorting(IQueryable<UserClass> query, PagedUserClassResultRequestDto input)
         {
-            return query.OrderBy(r => r.User.UserName);
+            return query.OrderBy(r => r.User.Name);
         }
 
         // Get All UserClass
