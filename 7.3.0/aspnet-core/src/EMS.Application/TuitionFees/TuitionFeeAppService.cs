@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace EMS.TuitionFees
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class TuitionFeeAppService : AsyncCrudAppService<TuitionFee, TuitionFeeDto, long, PagedTuitionFeeResultRequestDto, CreateOrUpdateTuitionFeeDto, CreateOrUpdateTuitionFeeDto>, ITuitionFeeAppService
+    public class TuitionFeeAppService : AsyncCrudAppService<TuitionFee, TuitionFeeDto, long, PagedTuitionFeeResultRequestDto, CreateTuitionFeeDto, UpdateTuitionFeeDto>, ITuitionFeeAppService
     {
         private readonly RoleManager _roleManager;
         private readonly IRepository<UserClass, long> _userClassRepository;
@@ -72,9 +72,9 @@ namespace EMS.TuitionFees
         }
 
         // Check UserClass exists or not
-        protected async Task<UserClass> GetEntitiesAsync(CreateOrUpdateTuitionFeeDto input)
+        protected async Task<UserClass> GetEntitiesAsync(long studentId)
         {
-            var userClass = await _userClassRepository.GetAsync(input.StudentId);
+            var userClass = await _userClassRepository.GetAsync(studentId);
             if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
             {
                 return userClass;
@@ -114,10 +114,10 @@ namespace EMS.TuitionFees
         }
 
         // Create new TuitionFee
-        public override async Task<TuitionFeeDto> CreateAsync(CreateOrUpdateTuitionFeeDto input)
+        public override async Task<TuitionFeeDto> CreateAsync(CreateTuitionFeeDto input)
         {
             CheckCreatePermission();
-            var userClass = await GetEntitiesAsync(input);
+            var userClass = await GetEntitiesAsync(input.StudentId);
             var tuitionFee = new TuitionFee
             {
                 StudentId = userClass.Id,
@@ -130,10 +130,10 @@ namespace EMS.TuitionFees
         }
 
         // Update TuitionFee
-        public override async Task<TuitionFeeDto> UpdateAsync(CreateOrUpdateTuitionFeeDto input)
+        public override async Task<TuitionFeeDto> UpdateAsync(UpdateTuitionFeeDto input)
         {
             CheckUpdatePermission();
-            var userClass = await GetEntitiesAsync(input);
+            var userClass = await GetEntitiesAsync(input.StudentId);
             var tuitionFee = await Repository.GetAsync(input.Id);
             tuitionFee.UserClass = userClass;
             tuitionFee.Fee = input.Fee;

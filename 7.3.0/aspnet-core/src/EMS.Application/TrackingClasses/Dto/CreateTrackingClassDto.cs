@@ -1,5 +1,4 @@
-﻿using Abp.Application.Services.Dto;
-using Abp.AutoMapper;
+﻿using Abp.AutoMapper;
 using EMS.Authorization.TrackingClasses;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -7,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace EMS.TrackingClasses.Dto
 {
     [AutoMapTo(typeof(TrackingClass))]
-    public class CreateOrUpdateTrackingClassDto : EntityDto<long>
+    public class CreateTrackingClassDto
     {
         [Required]
         public long StudentId { get; set; }

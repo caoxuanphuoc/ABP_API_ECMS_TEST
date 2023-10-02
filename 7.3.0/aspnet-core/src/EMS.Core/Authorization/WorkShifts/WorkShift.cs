@@ -10,6 +10,7 @@ namespace EMS.Authorization.WorkShifts
     public class WorkShift : FullAuditedEntity<long>
     {
         public string Code { get; set; }
+        public int DateOfWeek { get; set; } // thứ trong tuần
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
         public int DateOfWeek { get; set; }

@@ -3,7 +3,7 @@ using EMS.Courses.Dto;
 
 namespace EMS.Courses
 {
-    public interface ICourseAppService : IAsyncCrudAppService<CourseDto, long, PagedCourseResultRequestDto, CreateOrUpdateCourse, CreateOrUpdateCourse>
+    public interface ICourseAppService : IAsyncCrudAppService<CourseDto, long, PagedCourseResultRequestDto, CreateCourseDto, UpdateCourseDto>
     {
     }
 }

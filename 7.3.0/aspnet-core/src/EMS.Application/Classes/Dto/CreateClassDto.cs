@@ -1,5 +1,4 @@
-﻿using Abp.Application.Services.Dto;
-using Abp.AutoMapper;
+﻿using Abp.AutoMapper;
 using EMS.Authorization.Classes;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -7,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace EMS.Classes.Dto
 {
     [AutoMapTo(typeof(Class))]
-    public class CreateOrUpdateClassDto : EntityDto<long>
+    public class CreateClassDto
     {
         [Required]
         public string Code { get; set; }
