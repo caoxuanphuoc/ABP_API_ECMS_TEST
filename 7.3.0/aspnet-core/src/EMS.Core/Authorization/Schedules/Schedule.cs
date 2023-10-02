@@ -18,7 +18,7 @@ namespace EMS.Authorization.Schedules
         public long WorkShiftId { get; set; }
         public WorkShift WorkShift { get; set; }
         [ForeignKey("Room")]
-        public long RoomId { get; set; }
+        public int RoomId { get; set; }
         public Room Room { get; set; }
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace EMS.Schedules
 {
-    public interface IScheduleAppService : IAsyncCrudAppService<ScheduleDto, long, PagedScheduleResultRequestDto, CreateOrUpdateScheduleDto, CreateOrUpdateScheduleDto>
+    public interface IScheduleAppService : IAsyncCrudAppService<ScheduleDto, long, PagedScheduleResultRequestDto, CreateScheduleDto, UpdateScheduleDto>
     {
         Task<PagedResultDto<ScheduleDto>> GetAllWithClassIdFilter(PagedScheduleResultRequestDto input, long classId);
     }
