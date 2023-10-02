@@ -120,11 +120,11 @@ namespace EMS.UserClasses
                 query = query.Where(x => x.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower())
-                                        && x.User.IsActive && x.IsActive);
+                                        && x.User.IsActive && x.IsActive && !x.User.IsDeleted);
             }
             else
             {
-                query = query.Where(x => x.User.IsActive && x.IsActive);
+                query = query.Where(x => x.User.IsActive && x.IsActive && !x.User.IsDeleted);
             }
             return query;
         }
