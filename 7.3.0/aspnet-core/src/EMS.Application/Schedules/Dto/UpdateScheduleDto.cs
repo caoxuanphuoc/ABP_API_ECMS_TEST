@@ -14,8 +14,10 @@ namespace EMS.Schedules.Dto
         [Required]
         public long ClassId { get; set; }
         [Required]
-        public long WorkShiftId { get; set; }
-        [Required]
         public int RoomId { get; set; }
+        [Required]
+        public DayOfTheWeek DayOfWeek { get; set; }
+        [Required]
+        public Shift Shift { get; set; }
     }
 }
