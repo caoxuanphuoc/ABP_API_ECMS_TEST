@@ -68,11 +68,11 @@ namespace EMS.Teachers
                                         x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.SchoolName.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.Certificate.ToLower().Contains(input.Keyword.ToLower())
-                                        && x.User.IsActive);
+                                        && x.User.IsActive && !x.User.IsDeleted);
             }
             else
             {
-                query = query.Where(x => x.User.IsActive);
+                query = query.Where(x => x.User.IsActive && !x.User.IsDeleted);
             }
             return query;
         }
