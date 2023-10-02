@@ -71,18 +71,9 @@ namespace EMS.TrackingClasses
         }
 
         // Check UserClass exists or not
-        protected async Task<UserClass> GetEntitiesAsync(UpdateTrackingClassDto input)
+        protected async Task<UserClass> GetEntitiesAsync(long studentId)
         {
-            var userClass = await _userClassRepository.GetAsync(input.StudentId);
-            if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
-            {
-                return userClass;
-            }
-            throw new EntityNotFoundException("Not found UserClass");
-        }
-        protected async Task<UserClass> GetEntitiesAsync(CreateTrackingClassDto input)
-        {
-            var userClass = await _userClassRepository.GetAsync(input.StudentId);
+            var userClass = await _userClassRepository.GetAsync(studentId);
             if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
             {
                 return userClass;
@@ -125,7 +116,7 @@ namespace EMS.TrackingClasses
         public override async Task<TrackingClassDto> CreateAsync(CreateTrackingClassDto input)
         {
             CheckCreatePermission();
-            var userClass = await GetEntitiesAsync(input);
+            var userClass = await GetEntitiesAsync(input.StudentId);
             var trackingClass = new TrackingClass
             {
                 StudentId = userClass.Id,
@@ -141,7 +132,7 @@ namespace EMS.TrackingClasses
         public override async Task<TrackingClassDto> UpdateAsync(UpdateTrackingClassDto input)
         {
             CheckUpdatePermission();
-            var userClass = await GetEntitiesAsync(input);
+            var userClass = await GetEntitiesAsync(input.StudentId);
             var trackingClass = await Repository.GetAsync(input.Id);
             trackingClass.UserClass = userClass;
             trackingClass.Date = input.Date;
