@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EMS.Migrations
 {
-    public partial class Initial_Db_V2 : Migration
+    public partial class innit_DB_V1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,10 +35,10 @@ namespace EMS.Migrations
                 name: "AbpRoom",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MaxContainer = table.Column<long>(type: "bigint", nullable: false),
+                    MaxContainer = table.Column<int>(type: "int", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorUserId = table.Column<long>(type: "bigint", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -147,7 +147,7 @@ namespace EMS.Migrations
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClassId = table.Column<long>(type: "bigint", nullable: false),
                     WorkShiftId = table.Column<long>(type: "bigint", nullable: false),
-                    RoomId = table.Column<long>(type: "bigint", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorUserId = table.Column<long>(type: "bigint", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),

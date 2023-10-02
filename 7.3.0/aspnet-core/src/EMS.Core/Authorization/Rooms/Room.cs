@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace EMS.Authorization.Rooms
 {
     [Table("AbpRoom")]
-    public class Room : FullAuditedEntity<long>
+    public class Room : FullAuditedEntity<int>
     {
         public string RoomName { get; set; }
         public int MaxContainer { get; set;}

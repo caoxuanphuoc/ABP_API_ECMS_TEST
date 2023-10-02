@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace EMS.WorkShifts
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class WorkShiftAppService : AsyncCrudAppService<WorkShift, WorkShiftDto, long, PagedWorkShiftResultRequestDto, CreateOrUpdateWorkShiftDto, CreateOrUpdateWorkShiftDto>, IWorkShiftAppService
+    public class WorkShiftAppService : AsyncCrudAppService<WorkShift, WorkShiftDto, long, PagedWorkShiftResultRequestDto, CreateWorkShiftDto, UpdateWorkShiftDto>, IWorkShiftAppService
     {
         private readonly IRepository<Schedule, long> _scheduleRepository;
         public WorkShiftAppService(IRepository<WorkShift, long> repository, IRepository<Schedule, long> scheduleRepository) : base(repository)

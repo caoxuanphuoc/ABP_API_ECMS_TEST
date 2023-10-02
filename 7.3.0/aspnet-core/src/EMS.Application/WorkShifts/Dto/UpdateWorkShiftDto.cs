@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace EMS.WorkShifts.Dto
 {
     [AutoMapTo(typeof(WorkShift))]
-    public class CreateOrUpdateWorkShiftDto : EntityDto<long>
+    public class UpdateWorkShiftDto : EntityDto<long>
     {
         [Required]
         public string Code { get; set; }

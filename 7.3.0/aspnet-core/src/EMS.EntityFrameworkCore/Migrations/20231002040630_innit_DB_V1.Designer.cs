@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMS.Migrations
 {
     [DbContext(typeof(EMSDbContext))]
-    [Migration("20231002023245_Initial_Db_V2")]
-    partial class Initial_Db_V2
+    [Migration("20231002040630_innit_DB_V1")]
+    partial class innit_DB_V1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1546,11 +1546,11 @@ namespace EMS.Migrations
 
             modelBuilder.Entity("EMS.Authorization.Rooms.Room", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
@@ -1573,8 +1573,8 @@ namespace EMS.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("MaxContainer")
-                        .HasColumnType("bigint");
+                    b.Property<int>("MaxContainer")
+                        .HasColumnType("int");
 
                     b.Property<string>("RoomName")
                         .HasColumnType("nvarchar(max)");
@@ -1619,8 +1619,8 @@ namespace EMS.Migrations
                     b.Property<long?>("LastModifierUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("RoomId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
 
                     b.Property<long>("WorkShiftId")
                         .HasColumnType("bigint");
