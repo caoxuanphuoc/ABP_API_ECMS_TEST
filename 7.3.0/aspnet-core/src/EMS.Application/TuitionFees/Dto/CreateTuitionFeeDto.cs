@@ -1,5 +1,4 @@
-﻿using Abp.Application.Services.Dto;
-using Abp.AutoMapper;
+﻿using Abp.AutoMapper;
 using EMS.Authorization.TuitionFees;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -7,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace EMS.TuitionFees.Dto
 {
     [AutoMapTo(typeof(TuitionFee))]
-    public class CreateOrUpdateTuitionFeeDto : EntityDto<long>
+    public class CreateTuitionFeeDto
     {
         [Required]
         public long StudentId { get; set; }

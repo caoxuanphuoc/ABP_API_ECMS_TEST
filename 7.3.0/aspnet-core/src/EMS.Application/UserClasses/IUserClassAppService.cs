@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace EMS.UserClasses
 {
-    public interface IUserClassAppService : IAsyncCrudAppService<UserClassDto, long, PagedUserClassResultRequestDto, CreateUserClassDto, CreateOrUpdateUserClassDto>
+    public interface IUserClassAppService : IAsyncCrudAppService<UserClassDto, long, PagedUserClassResultRequestDto, CreateUserClassDto, UpdateUserClassDto>
     {
         Task<PagedResultDto<UserClassDto>> GetAllWithClassIdFilter(PagedUserClassResultRequestDto input, long classId);
     }

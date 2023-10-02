@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace EMS.Courses
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class CourseAppService : AsyncCrudAppService<Course, CourseDto, long, PagedCourseResultRequestDto, CreateOrUpdateCourse, CreateOrUpdateCourse>, ICourseAppService
+    public class CourseAppService : AsyncCrudAppService<Course, CourseDto, long, PagedCourseResultRequestDto, CreateCourseDto, UpdateCourseDto>, ICourseAppService
     {
         private readonly IRepository<Class, long> _classRepository;
         public CourseAppService(IRepository<Course, long> repository, IRepository<Class, long> classRepository) : base(repository)

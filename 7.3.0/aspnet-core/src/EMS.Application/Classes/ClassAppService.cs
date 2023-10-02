@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace EMS.Classes
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class ClassAppService : AsyncCrudAppService<Class, ClassDto, long, PagedClassResultRequestDto, CreateOrUpdateClassDto, CreateOrUpdateClassDto>, IClassAppService
+    public class ClassAppService : AsyncCrudAppService<Class, ClassDto, long, PagedClassResultRequestDto, CreateClassDto, UpdateClassDto>, IClassAppService
     {
         private readonly IRepository<Schedule, long> _scheduleRepository;
         private readonly IRepository<Course, long> _courseRepository;
@@ -53,7 +53,7 @@ namespace EMS.Classes
             return query.OrderBy(r => r.StartDate);
         }
         // Check Course exists or not
-        protected async Task<Course> GetEntitiesAsync(CreateOrUpdateClassDto input)
+        protected async Task<Course> GetEntitiesAsync(UpdateClassDto input)
         {
             var course = await _courseRepository.GetAsync(input.CourseId);
             if ((course != null && course.IsDeleted) || course == null)
@@ -61,7 +61,15 @@ namespace EMS.Classes
                 throw new EntityNotFoundException("Not found Course");
             }
             return course;
-            throw new EntityNotFoundException("Not found UserClass");
+        }
+        protected async Task<Course> GetEntitiesAsync(CreateClassDto input)
+        {
+            var course = await _courseRepository.GetAsync(input.CourseId);
+            if ((course != null && course.IsDeleted) || course == null)
+            {
+                throw new EntityNotFoundException("Not found Course");
+            }
+            return course;
         }
 
         // Get Class
@@ -76,7 +84,7 @@ namespace EMS.Classes
         }
 
         //Create new Class
-        public override async Task<ClassDto> CreateAsync(CreateOrUpdateClassDto input)
+        public override async Task<ClassDto> CreateAsync(CreateClassDto input)
         {
             CheckCreatePermission();
             var course = await GetEntitiesAsync(input);
@@ -97,7 +105,7 @@ namespace EMS.Classes
         }
 
         // Update new Class
-        public override async Task<ClassDto> UpdateAsync(CreateOrUpdateClassDto input)
+        public override async Task<ClassDto> UpdateAsync(UpdateClassDto input)
         {
             CheckUpdatePermission();
             var course = await GetEntitiesAsync(input);
