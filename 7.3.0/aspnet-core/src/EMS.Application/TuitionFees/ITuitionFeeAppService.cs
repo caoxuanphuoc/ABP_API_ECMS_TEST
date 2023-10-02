@@ -3,7 +3,7 @@ using EMS.TuitionFees.Dto;
 
 namespace EMS.TuitionFees
 {
-    public interface ITuitionFeeAppService : IAsyncCrudAppService<TuitionFeeDto, long, PagedTuitionFeeResultRequestDto, CreateOrUpdateTuitionFeeDto, CreateOrUpdateTuitionFeeDto>
+    public interface ITuitionFeeAppService : IAsyncCrudAppService<TuitionFeeDto, long, PagedTuitionFeeResultRequestDto, CreateTuitionFeeDto, UpdateTuitionFeeDto>
     {
     }
 }
