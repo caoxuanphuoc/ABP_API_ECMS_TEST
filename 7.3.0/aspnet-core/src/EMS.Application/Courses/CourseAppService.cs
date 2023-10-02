@@ -25,6 +25,7 @@ namespace EMS.Courses
 
         public override async Task DeleteAsync(EntityDto<long> input)
         {
+            CheckDeletePermission();
             if (await _classRepository.CountAsync(x => x.CourseId == input.Id) > 0)
             {
                 throw new UserFriendlyException($"Class is using Course with id = {input.Id} ");

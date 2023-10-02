@@ -72,18 +72,9 @@ namespace EMS.TuitionFees
         }
 
         // Check UserClass exists or not
-        protected async Task<UserClass> GetEntitiesAsync(CreateTuitionFeeDto input)
+        protected async Task<UserClass> GetEntitiesAsync(long studentId)
         {
-            var userClass = await _userClassRepository.GetAsync(input.StudentId);
-            if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
-            {
-                return userClass;
-            }
-            throw new EntityNotFoundException("Not found UserClass");
-        }
-        protected async Task<UserClass> GetEntitiesAsync(UpdateTuitionFeeDto input)
-        {
-            var userClass = await _userClassRepository.GetAsync(input.StudentId);
+            var userClass = await _userClassRepository.GetAsync(studentId);
             if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
             {
                 return userClass;
@@ -126,7 +117,7 @@ namespace EMS.TuitionFees
         public override async Task<TuitionFeeDto> CreateAsync(CreateTuitionFeeDto input)
         {
             CheckCreatePermission();
-            var userClass = await GetEntitiesAsync(input);
+            var userClass = await GetEntitiesAsync(input.StudentId);
             var tuitionFee = new TuitionFee
             {
                 StudentId = userClass.Id,
@@ -142,7 +133,7 @@ namespace EMS.TuitionFees
         public override async Task<TuitionFeeDto> UpdateAsync(UpdateTuitionFeeDto input)
         {
             CheckUpdatePermission();
-            var userClass = await GetEntitiesAsync(input);
+            var userClass = await GetEntitiesAsync(input.StudentId);
             var tuitionFee = await Repository.GetAsync(input.Id);
             tuitionFee.UserClass = userClass;
             tuitionFee.Fee = input.Fee;
