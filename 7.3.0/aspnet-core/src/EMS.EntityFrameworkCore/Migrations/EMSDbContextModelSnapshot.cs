@@ -1467,43 +1467,6 @@ namespace EMS.Migrations
                     b.ToTable("AbpCourse");
                 });
 
-            modelBuilder.Entity("EMS.Authorization.Positions.Position", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("DeleterUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PositionName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AbpPosition");
-                });
-
             modelBuilder.Entity("EMS.Authorization.Roles.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1853,17 +1816,12 @@ namespace EMS.Migrations
                     b.Property<int>("OffTimes")
                         .HasColumnType("int");
 
-                    b.Property<long>("PositionId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClassId");
-
-                    b.HasIndex("PositionId");
 
                     b.HasIndex("UserId");
 
@@ -2384,12 +2342,6 @@ namespace EMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EMS.Authorization.Positions.Position", "Position")
-                        .WithMany("UserClasses")
-                        .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("EMS.Authorization.Users.User", "User")
                         .WithMany("UserClasses")
                         .HasForeignKey("UserId")
@@ -2397,8 +2349,6 @@ namespace EMS.Migrations
                         .IsRequired();
 
                     b.Navigation("Class");
-
-                    b.Navigation("Position");
 
                     b.Navigation("User");
                 });
@@ -2510,11 +2460,6 @@ namespace EMS.Migrations
             modelBuilder.Entity("EMS.Authorization.Courses.Course", b =>
                 {
                     b.Navigation("Classes");
-                });
-
-            modelBuilder.Entity("EMS.Authorization.Positions.Position", b =>
-                {
-                    b.Navigation("UserClasses");
                 });
 
             modelBuilder.Entity("EMS.Authorization.Roles.Role", b =>

@@ -1,6 +1,5 @@
 ﻿using Abp.Domain.Entities.Auditing;
 using EMS.Authorization.Classes;
-using EMS.Authorization.Positions;
 using EMS.Authorization.TrackingClasses;
 using EMS.Authorization.TuitionFees;
 using EMS.Authorization.Users;
@@ -22,9 +21,6 @@ namespace EMS.Authorization.UserClasses
         [ForeignKey("Class")]
         public long ClassId { get; set; }
         public Class Class { get; set; }
-        [ForeignKey("Position")]
-        public long PositionId { get; set; }
-        public Position Position { get; set; }
         public ICollection<TuitionFee> TuitionFees { get; set; }
         public ICollection<TrackingClass> TrackingClasses { get; set; }
     }

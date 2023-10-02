@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EMS.Migrations
 {
-    public partial class Initital_Db_V2 : Migration
+    public partial class Initial_Db_V2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -29,26 +29,6 @@ namespace EMS.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AbpCourse", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AbpPosition",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PositionName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorUserId = table.Column<long>(type: "bigint", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierUserId = table.Column<long>(type: "bigint", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeleterUserId = table.Column<long>(type: "bigint", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpPosition", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -210,7 +190,6 @@ namespace EMS.Migrations
                     DateStart = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     ClassId = table.Column<long>(type: "bigint", nullable: false),
-                    PositionId = table.Column<long>(type: "bigint", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorUserId = table.Column<long>(type: "bigint", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -226,12 +205,6 @@ namespace EMS.Migrations
                         name: "FK_AbpUserClass_AbpClass_ClassId",
                         column: x => x.ClassId,
                         principalTable: "AbpClass",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AbpUserClass_AbpPosition_PositionId",
-                        column: x => x.PositionId,
-                        principalTable: "AbpPosition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -339,11 +312,6 @@ namespace EMS.Migrations
                 column: "ClassId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AbpUserClass_PositionId",
-                table: "AbpUserClass",
-                column: "PositionId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AbpUserClass_UserId",
                 table: "AbpUserClass",
                 column: "UserId");
@@ -374,9 +342,6 @@ namespace EMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpClass");
-
-            migrationBuilder.DropTable(
-                name: "AbpPosition");
 
             migrationBuilder.DropTable(
                 name: "AbpCourse");
