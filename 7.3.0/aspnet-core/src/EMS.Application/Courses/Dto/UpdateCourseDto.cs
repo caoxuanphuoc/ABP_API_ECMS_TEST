@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace EMS.Courses.Dto
 {
     [AutoMapTo(typeof(Course))]
-    public class CreateOrUpdateCourse : EntityDto<long>
+    public class UpdateCourseDto : EntityDto<long>
     {
         [Required]
         public string CourseName { get; set; }
