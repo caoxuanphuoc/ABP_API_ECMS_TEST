@@ -196,7 +196,7 @@ class CreateOrUpdateClass extends React.Component<
               {
                 validator: (rule, value) => {
                   if (!value || !value.isValid || !value.isValid()) {
-                    return Promise.reject('Please select a valid end time');
+                    return Promise.reject('Please select a valid start date');
                   }
                   return Promise.resolve();
                 },
