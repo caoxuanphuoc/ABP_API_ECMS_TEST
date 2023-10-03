@@ -3,6 +3,7 @@ using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Entities;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 using Abp.Extensions;
 using Abp.UI;
 using EMS.Authorization;
@@ -10,6 +11,7 @@ using EMS.Authorization.Classes;
 using EMS.Authorization.Courses;
 using EMS.Authorization.Schedules;
 using EMS.Classes.Dto;
+using EMS.Schedules;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,14 +22,17 @@ namespace EMS.Classes
     public class ClassAppService : AsyncCrudAppService<Class, ClassDto, long, PagedClassResultRequestDto, CreateClassDto, UpdateClassDto>, IClassAppService
     {
         private readonly IRepository<Schedule, long> _scheduleRepository;
+        private readonly IScheduleAppService _scheduleService;
         private readonly IRepository<Course, long> _courseRepository;
         public ClassAppService(
             IRepository<Class, long> repository,
             IRepository<Schedule, long> scheduleRepository,
-            IRepository<Course, long> courseRepository)
-            : base(repository)
+            IRepository<Course, long> courseRepository,
+            IScheduleAppService scheduleService
+        ) : base(repository)
         {
             _scheduleRepository = scheduleRepository;
+            _scheduleService = scheduleService;
             _courseRepository = courseRepository;
         }
         // Create Query
@@ -90,8 +95,12 @@ namespace EMS.Classes
                 LessionTimes = input.LessionTimes,
                 IsActive = input.IsActive,
             };
-            var createClass = await Repository.InsertAndGetIdAsync(classRoom);
-            var getCreateClassId = new EntityDto<long> { Id = createClass };
+            var createClassId = await Repository.InsertAndGetIdAsync(classRoom);
+            // Xử lý vừa thêm vào class vừa thêm vào schedule
+            await CurrentUnitOfWork.SaveChangesAsync();
+            var resScheduleList = _scheduleService.CreateAutomatic(input.StartDate, input.EndDate, createClassId, input.RoomId, input.lsWorkSheet);
+           
+            var getCreateClassId = new EntityDto<long> { Id = createClassId };
             return await GetAsync(getCreateClassId);
         }
 

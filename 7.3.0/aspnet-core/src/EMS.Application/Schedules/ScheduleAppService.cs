@@ -11,7 +11,9 @@ using EMS.Authorization.Rooms;
 using EMS.Authorization.Schedules;
 using EMS.Schedules.Dto;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,7 +40,7 @@ namespace EMS.Schedules
         // Sorting by User
         protected override IQueryable<Schedule> ApplySorting(IQueryable<Schedule> query, PagedScheduleResultRequestDto input)
         {
-            return query.OrderBy(x => x.DayOfWeek).ThenBy(r => r.Date);
+            return query.OrderBy(x => x.ClassId).ThenBy(r => r.Date);
         }
 
         protected override IQueryable<Schedule> CreateFilteredQuery(PagedScheduleResultRequestDto input)
@@ -51,7 +53,7 @@ namespace EMS.Schedules
         protected async Task<(Class classRoom,  Room room)> GetEntitiesAsync(CreateScheduleDto input)
         {
             var classRoom = await _classRepository.GetAsync(input.ClassId);
-            var room  = await _roomRepository.GetAsync(input.RoomId);
+            var room  =  _roomRepository.Get(input.RoomId);
             if (classRoom != null && classRoom.IsActive && !classRoom.IsDeleted)
             {
                 return (classRoom, room);
@@ -80,6 +82,54 @@ namespace EMS.Schedules
             var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
             return scheduleDto;
         }
+        // Create automatic schedule
+       // Thuật toán
+       /// <summary>
+       ///  Với mỗi ngày nằm trong khoảng từ startTime đên EndTime 
+       ///      + Kiểm tra xem ngày đó là ngày thứ mấy.
+       ///          + Nếu ngày đó trong với lịch học (workShift) đã nhập ở class)
+       ///          + thì tạo một bản ghi lưu vào schedule table
+       ///          Tiếp tục cho đến khi đến ngày kết thúc.
+       /// </summary>
+       /// <param name="startTime"></param>
+       /// <param name="endTime"></param>
+       /// <param name="classId"></param>
+       /// <param name="roomId"></param>
+       /// <param name="LsWorkShift"></param>
+       /// <returns></returns>
+        public async Task<PagedResultDto<ScheduleDto>> CreateAutomatic(DateTime startTime, DateTime endTime,long classId, int roomId, List<WorkShiftDto> LsWorkShift)
+        {
+            DateTime Temp = startTime;
+            List<ScheduleDto> result = new List<ScheduleDto>();
+            while(Temp <= endTime)
+            {
+                DayOfWeek checkDOW = Temp.DayOfWeek;
+                LsWorkShift.ForEach(async e =>
+                {
+                    if(e.DateOfWeek.ToString() == checkDOW.ToString())
+                    {
+
+                        Schedule createScheduleDto = new Schedule
+                        {
+                            Date = Temp,
+                            ClassId = classId,
+                            RoomId = roomId,
+                            DayOfWeek  = e.DateOfWeek,
+                            Shift = e.ShiftTime
+                        };
+                        var resId = await Repository.InsertAndGetIdAsync(createScheduleDto);
+                        var getCreateScheduleId = new EntityDto<long> { Id = resId };
+                        var a = await GetAsync(getCreateScheduleId);
+                        result.Add(a);
+                    }
+                });
+                
+                Temp = Temp.AddDays(1);
+
+            }
+            return new PagedResultDto<ScheduleDto>(result.Count(), result); ;
+        }
+
         // Create new Schedule
         public override async Task<ScheduleDto> CreateAsync(CreateScheduleDto input)
         {
@@ -87,9 +137,9 @@ namespace EMS.Schedules
             var (classRoom,  room) = await GetEntitiesAsync(input);
             var schedule = new Schedule
             {
+                Date = input.Date,
                 ClassId = classRoom.Id,
                 RoomId = room.Id,
-                Date = input.Date,
                 DayOfWeek = input.DayOfWeek,
                 Shift = input.Shift,
             };
@@ -138,5 +188,7 @@ namespace EMS.Schedules
             }
             return new PagedResultDto<ScheduleDto>(totalCount, listScheduleDtos);
         }
+
+        
     }
 }
