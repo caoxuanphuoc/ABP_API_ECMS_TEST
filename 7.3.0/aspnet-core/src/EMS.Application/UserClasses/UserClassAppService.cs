@@ -117,12 +117,9 @@ namespace EMS.UserClasses
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
-                query = query.Where(x => x.User.UserName.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower()) ||
-                                        x.User.Teachers.Any(teacher => teacher.SchoolName.ToLower().Contains(input.Keyword.ToLower())) ||
-                                        x.User.Teachers.Any(teacher => teacher.Certificate.ToLower().Contains(input.Keyword.ToLower()))
-                                        && x.User.IsActive && !x.User.IsDeleted && x.IsActive == input.IsActive && x.ClassId == input.ClassId);
+                query = query.Where(x => x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
+                                        x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower())
+                                        && x.User.IsActive && !x.User.IsDeleted && x.IsActive == input.IsActive);
             }
             else
             {
