@@ -9,6 +9,7 @@ import CourseStore from './courseStore';
 import ClassStore from './classStore';
 import ScheduleStore from './scheduleStore';
 import TeacherStore from './teacherStore';
+import UserClassStore from './userClassStore';
 
 export default function initializeStores() {
   return {
@@ -23,5 +24,6 @@ export default function initializeStores() {
     classStore: new ClassStore(),
     scheduleStore: new ScheduleStore(),
     teacherStore: new TeacherStore(),
+    userClassStore: new UserClassStore(),
   };
 }

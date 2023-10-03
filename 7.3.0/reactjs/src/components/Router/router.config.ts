@@ -6,8 +6,9 @@ import {
   InfoCircleOutlined,
   ClockCircleOutlined,
   BookOutlined,
-  UsergroupAddOutlined,
   SolutionOutlined,
+  ReadOutlined,
+  UsergroupAddOutlined,
 } from '@ant-design/icons';
 import LoadableComponent from './../Loadable/index';
 
@@ -81,9 +82,18 @@ export const appRouters: any = [
     permission: 'Pages.Users',
     title: 'Classes',
     name: 'class',
-    icon: UsergroupAddOutlined,
+    icon: ReadOutlined,
     showInMenu: true,
     component: LoadableComponent(() => import('../../scenes/Classes')),
+  },
+  {
+    path: '/userClasses',
+    permission: 'Pages.Users',
+    title: 'UserClasses',
+    name: 'userClass',
+    icon: UsergroupAddOutlined,
+    showInMenu: true,
+    component: LoadableComponent(() => import('../../scenes/UserClasses')),
   },
   {
     path: '/teachers',

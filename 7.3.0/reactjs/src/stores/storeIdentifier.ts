@@ -20,4 +20,6 @@ export default class Stores {
   static ScheduleStore = 'scheduleStore';
 
   static TeacherStore = 'teacherStore';
+
+  static UserClassStore = 'userClassStore';
 }

@@ -123,7 +123,6 @@ class CreateOrUpdateTeacher extends React.Component<
           >
             <Select
               style={{ width: 350 }}
-              //   onChange={handleChangeValue}
               options={users.map((user) => ({
                 key: user.id,
                 value: user.id,
