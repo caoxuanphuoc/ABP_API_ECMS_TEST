@@ -78,7 +78,7 @@ class Teacher extends AppComponentBase<ITeacherProps, ITeacherState> {
     }
 
     this.setState({
-      selectedUserId: this.props.userStore.editUser?.id,
+      selectedUserId: this.props.teacherStore.editTeacher?.user?.id,
       teacherId: entityDto.id,
     });
     this.Modal();
