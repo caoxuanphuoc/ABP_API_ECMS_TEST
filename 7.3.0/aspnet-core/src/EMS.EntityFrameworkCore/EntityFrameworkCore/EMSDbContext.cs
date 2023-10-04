@@ -9,7 +9,6 @@ using EMS.Authorization.TrackingClasses;
 using EMS.Authorization.TuitionFees;
 using EMS.Authorization.UserClasses;
 using EMS.Authorization.Users;
-using EMS.Authorization.WorkShifts;
 using EMS.MultiTenancy;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +23,6 @@ namespace EMS.EntityFrameworkCore
         public DbSet<Class> Classes { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<Course> Courses { get; set; }
-        public DbSet<WorkShift> WorkShifts { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public EMSDbContext(DbContextOptions<EMSDbContext> options)

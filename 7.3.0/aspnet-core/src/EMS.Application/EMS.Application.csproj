@@ -13,5 +13,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EMS.Core\EMS.Core.csproj" />
+    <ProjectReference Include="..\EMS.EntityFrameworkCore\EMS.EntityFrameworkCore.csproj" />
   </ItemGroup>
 </Project>

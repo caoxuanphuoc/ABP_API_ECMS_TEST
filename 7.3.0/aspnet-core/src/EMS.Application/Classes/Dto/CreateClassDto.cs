@@ -1,6 +1,9 @@
 ﻿using Abp.AutoMapper;
 using EMS.Authorization.Classes;
+using EMS.Authorization.Schedules;
+using EMS.Schedules.Dto;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EMS.Classes.Dto
@@ -24,5 +27,12 @@ namespace EMS.Classes.Dto
         public int LessionTimes { get; set; }
         [Required]
         public bool IsActive { get; set; }
+        // For schedule service
+        // Tách RoomId và list workshift ra để tạo schedule
+        [Required]
+        public int RoomId { get; set; }
+        [Required]
+        public List<WorkShiftDto> lsWorkSheet { get; set; }
+
     }
 }

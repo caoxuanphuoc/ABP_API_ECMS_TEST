@@ -4,7 +4,6 @@ using EMS.Authorization.Rooms;
 using EMS.Authorization.Schedules;
 using EMS.Classes.Dto;
 using EMS.UserClasses.Dto;
-using EMS.WorkShifts.Dto;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,8 +13,9 @@ namespace EMS.Schedules.Dto
     public class ScheduleDto : EntityDto<long>
     {
         public ClassDto Class { get; set; }
-        public WorkShiftDto WorkShift { get; set; }
         public RoomDto Room { get; set; }
         public DateTime Date { get; set; }
+        public string DayOfWeek { get; set; }
+        public string Shift { get; set; }
     }
 }
