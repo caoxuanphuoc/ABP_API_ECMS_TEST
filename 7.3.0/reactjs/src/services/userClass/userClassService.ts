@@ -19,7 +19,7 @@ class UserClassService {
 
   public async delete(entityDto: EntityDto) {
     let result = await http.delete(`api/services/app/UserClass/Delete`, {
-      params: entityDto,
+      params: { id: entityDto.id },
     });
     return result.data;
   }
