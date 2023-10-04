@@ -6,22 +6,21 @@ import UserClassStore from '../../stores/userClassStore';
 import AppComponentBase from '../../components/AppComponentBase';
 import Stores from '../../stores/storeIdentifier';
 import UserClassData from './components/userClassData';
+import UserStore from '../../stores/userStore';
+import ClassStore from '../../stores/classStore';
 
 export interface IUserClassProps {
   userClassStore: UserClassStore;
+  userStore: UserStore;
+  classStore: ClassStore;
 }
 
 export interface IUserClassState {
   isActive: boolean;
   activeTabKey: string;
-  modalVisible: boolean;
-  maxResultCount: number;
-  skipCount: number;
-  userClassId: number;
-  filter: string;
 }
 
-@inject(Stores.UserClassStore)
+@inject(Stores.UserClassStore, Stores.UserStore, Stores.ClassStore)
 @observer
 class UserClass extends AppComponentBase<IUserClassProps, IUserClassState> {
   formRef = React.createRef<FormInstance>();
@@ -29,24 +28,36 @@ class UserClass extends AppComponentBase<IUserClassProps, IUserClassState> {
   state = {
     isActive: true,
     activeTabKey: 'DaDuyet',
-    modalVisible: false,
-    maxResultCount: 10,
-    skipCount: 0,
-    userClassId: 0,
-    filter: '',
   };
 
   public render() {
+    const { userClasses } = this.props.userClassStore;
     const tabList = [
       {
         key: 'DaDuyet',
         tab: 'Đã duyệt',
-        content: <UserClassData isActive userClassStore={this.props.userClassStore} />,
+        content: (
+          <UserClassData
+            isActive
+            userClassStore={this.props.userClassStore}
+            userClasses={userClasses}
+            userStore={this.props.userStore}
+            classStore={this.props.classStore}
+          />
+        ),
       },
       {
         key: 'ChoDuyet',
         tab: 'Chờ duyệt',
-        content: <UserClassData isActive={false} userClassStore={this.props.userClassStore} />,
+        content: (
+          <UserClassData
+            isActive={false}
+            userClassStore={this.props.userClassStore}
+            userClasses={userClasses}
+            userStore={this.props.userStore}
+            classStore={this.props.classStore}
+          />
+        ),
       },
     ];
 
