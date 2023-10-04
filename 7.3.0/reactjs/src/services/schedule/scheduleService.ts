@@ -39,19 +39,6 @@ class ScheduleService {
     });
     return result.data.result;
   }
-
-  public async getAllWithClassIdFilter(
-    pagedFilterAndSortedRequest: PagedScheduleResultRequestDto,
-    classId: number
-  ): Promise<PagedResultDto<GetAllScheduleOutput>> {
-    const result = await http.get(`api/services/app/Schedule/GetAllWithClassIdFilter`, {
-      params: {
-        pagedFilterAndSortedRequest,
-        classId: classId,
-      },
-    });
-    return result.data.result;
-  }
 }
 
 export default new ScheduleService();

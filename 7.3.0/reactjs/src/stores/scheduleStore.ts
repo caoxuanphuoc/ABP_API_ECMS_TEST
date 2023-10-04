@@ -54,19 +54,26 @@ class ScheduleStore {
           courseFee: 0,
           quantity: 0,
         },
+        room: {
+          roomName: '',
+          maxContainer: 0,
+          id: 0,
+        },
         startDate: new Date(),
         endDate: new Date(),
         limitStudent: 0,
         currentStudent: 0,
         lessionTimes: 0,
         isActive: true,
+        lsWorkSheet: [],
       },
-      workShift: {
+      room: {
+        roomName: '',
+        maxContainer: 0,
         id: 0,
-        code: 'string',
-        timeStart: new Date(),
-        timeEnd: new Date(),
       },
+      dayOfWeek: 0,
+      shift: 1,
       date: new Date(),
     };
   }
@@ -74,18 +81,6 @@ class ScheduleStore {
   @action
   async getAll(pagedFilterAndSortedRequest: PagedScheduleResultRequestDto) {
     let result = await scheduleService.getAll(pagedFilterAndSortedRequest);
-    this.schedules = result;
-  }
-
-  @action
-  async getAllWithClassIdFilter(
-    pagedFilterAndSortedRequest: PagedScheduleResultRequestDto,
-    classId: number
-  ) {
-    let result = await scheduleService.getAllWithClassIdFilter(
-      pagedFilterAndSortedRequest,
-      classId
-    );
     this.schedules = result;
   }
 }

@@ -15,13 +15,11 @@ import { CourseCreen } from './components/Courses/courseScreen';
 import Course from './components/Courses/course';
 import ScheduleStore from '../../stores/scheduleStore';
 import Schedule from './components/Schedules/Schedule';
-import WorkShiftStore from '../../stores/workShiftStore';
 
 export interface IClassProps {
   classStore: ClassStore;
   courseStore: CourseStore;
   scheduleStore: ScheduleStore;
-  workShiftStore: WorkShiftStore;
 }
 
 export interface IClassState {
@@ -39,7 +37,7 @@ export interface IClassState {
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore, Stores.WorkShiftStore)
+@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore)
 @observer
 class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();

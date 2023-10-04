@@ -35,7 +35,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
 
   state = {
     modalVisible: false,
-    maxResultCount: 0,
+    maxResultCount: 10,
     skipCount: 0,
     scheduleId: 0,
     filter: '',
@@ -49,14 +49,12 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
 
   async getAll() {
     const { scheduleStore } = this.props;
-    await scheduleStore.getAllWithClassIdFilter(
-      {
-        maxResultCount: this.state.maxResultCount,
-        skipCount: this.state.skipCount,
-        keyword: this.state.filter,
-      },
-      this.props.classId
-    );
+    await scheduleStore.getAll({
+      maxResultCount: this.state.maxResultCount,
+      skipCount: this.state.skipCount,
+      keyword: this.state.filter,
+      classId: this.props.classId,
+    });
   }
 
   handleTableChange = (pagination: any) => {

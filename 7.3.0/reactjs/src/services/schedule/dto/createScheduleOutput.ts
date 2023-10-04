@@ -1,9 +1,13 @@
 import { GetClassOutput } from '../../class/dto/getClassOutput';
-import { GetWorkShiftOutput } from '../../workShift/dto/getWorkShiftOutput';
+import { GetRoomOutput } from '../../room/dto/getRoomOutput';
+import DayOfTheWeek from './dateOfTheWeek';
+import { Shift } from './shift';
 
 export interface CreateScheduleOutputItem {
   class: GetClassOutput;
-  workShift: GetWorkShiftOutput;
+  room: GetRoomOutput;
+  dayOfWeek: DayOfTheWeek;
+  shift: Shift;
   date: Date;
   id: number;
 }

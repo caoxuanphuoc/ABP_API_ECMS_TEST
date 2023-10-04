@@ -1,5 +1,10 @@
+import DayOfTheWeek from "./dateOfTheWeek";
+import { Shift } from "./shift";
+
 export interface CreateScheduleInput {
   classId: number;
-  workShiftId: number;
+  roomId: number;
+  dayOfWeek: DayOfTheWeek
+  shift:Shift
   date: Date;
 }
