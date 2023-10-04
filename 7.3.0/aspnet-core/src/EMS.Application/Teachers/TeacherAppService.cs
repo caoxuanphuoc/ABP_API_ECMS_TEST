@@ -80,7 +80,7 @@ namespace EMS.Teachers
         // Sorting by User
         protected override IQueryable<Teacher> ApplySorting(IQueryable<Teacher> query, PagedTeacherResultRequestDto input)
         {
-            return query.OrderBy(r => r.User.FullName);
+            return query.OrderBy(r => r.User.Name);
         }
 
         // Get All Teacher

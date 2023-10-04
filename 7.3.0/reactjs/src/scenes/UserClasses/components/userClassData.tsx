@@ -1,40 +1,40 @@
 import React from 'react';
-import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Dropdown, Input, Menu, Modal, Row, Table } from 'antd';
-import { inject, observer } from 'mobx-react';
 import { FormInstance } from 'antd/lib/form';
-import AppComponentBase from '../../components/AppComponentBase';
-import PositionStore from '../../stores/positionStore';
-import Stores from '../../stores/storeIdentifier';
-import { EntityDto } from '../../services/dto/entityDto';
-import { L } from '../../lib/abpUtility';
-import CreateOrUpdatePosition from './components/createOrUpdatePosition';
+import { Button, Col, Dropdown, Input, Menu, Modal, Row, Table, Tag } from 'antd';
+import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
+import moment from 'moment';
+import AppComponentBase from '../../../components/AppComponentBase';
+import UserClassStore from '../../../stores/userClassStore';
+import { EntityDto } from '../../../services/dto/entityDto';
+import { L } from '../../../lib/abpUtility';
 
-export interface IPositionProps {
-  positionStore: PositionStore;
+export interface IUserClassIsActiveDataProps {
+  isActive: boolean;
+  userClassStore: UserClassStore;
 }
 
-export interface IPositionState {
+export interface IUserClassIsActiveDataState {
   modalVisible: boolean;
   maxResultCount: number;
   skipCount: number;
-  positionId: number;
+  userClassId: number;
   filter: string;
 }
 
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.PositionStore)
-@observer
-class Position extends AppComponentBase<IPositionProps, IPositionState> {
+class UserClassData extends AppComponentBase<
+  IUserClassIsActiveDataProps,
+  IUserClassIsActiveDataState
+> {
   formRef = React.createRef<FormInstance>();
 
   state = {
     modalVisible: false,
     maxResultCount: 10,
     skipCount: 0,
-    positionId: 0,
+    userClassId: 0,
     filter: '',
   };
 
@@ -43,18 +43,17 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
   }
 
   async getAll() {
-    await this.props.positionStore.getAll({
+    await this.props.userClassStore.getAll({
       maxResultCount: this.state.maxResultCount,
       skipCount: this.state.skipCount,
       keyword: this.state.filter,
+      isActive: this.props.isActive,
     });
   }
 
   handleTableChange = (pagination: any) => {
     this.setState(
-      {
-        skipCount: (pagination.current - 1) * this.state.maxResultCount,
-      },
+      { skipCount: (pagination.current - 1) * this.state.maxResultCount! },
       async () => await this.getAll()
     );
   };
@@ -67,25 +66,25 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
 
   async createOrUpdateModalOpen(entityDto: EntityDto) {
     if (entityDto.id === 0) {
-      await this.props.positionStore.createPosition();
+      await this.props.userClassStore.createUserClass();
     } else {
-      await this.props.positionStore.get(entityDto);
+      await this.props.userClassStore.get(entityDto);
     }
 
-    this.setState({ positionId: entityDto.id });
+    this.setState({ userClassId: entityDto.id });
     this.Modal();
 
     setTimeout(() => {
-      this.formRef.current?.setFieldsValue({ ...this.props.positionStore.editPosition });
+      this.formRef.current?.setFieldsValue({ ...this.props.userClassStore.editUserClass });
     }, 100);
   }
 
   delete(input: EntityDto) {
     const self = this;
     confirm({
-      title: 'Do you want to delete these items?',
+      title: 'Do you Want to delete these items?',
       onOk() {
-        self.props.positionStore.delete(input);
+        self.props.userClassStore.delete(input);
       },
     });
   }
@@ -94,10 +93,10 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
     const form = this.formRef.current;
 
     form!.validateFields().then(async (values: any) => {
-      if (this.state.positionId === 0) {
-        await this.props.positionStore.create(values);
+      if (this.state.userClassId === 0) {
+        await this.props.userClassStore.create(values);
       } else {
-        await this.props.positionStore.update({ ...values, id: this.state.positionId });
+        await this.props.userClassStore.update({ ...values, id: this.state.userClassId });
       }
 
       await this.getAll();
@@ -111,14 +110,52 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
   };
 
   public render() {
-    const { positions } = this.props.positionStore;
+    const { userClasses } = this.props.userClassStore;
+
     const columns = [
       {
-        title: L('PositionName'),
-        dataIndex: 'positionName',
-        key: 'positionName',
-        with: 150,
+        title: L('FullName'),
+        dataIndex: 'name',
+        key: 'name',
+        width: 150,
+        render: (text: string, record: any) => (
+          <div>
+            {record.user.surname} {record.user.name}
+          </div>
+        ),
+      },
+      {
+        title: L('EmailAddress'),
+        dataIndex: 'emailAddress',
+        key: 'emailAddress',
+        width: 150,
+        render: (text: string, record: any) => <div>{record.user.emailAddress}</div>,
+      },
+      {
+        title: L('OffTimes'),
+        dataIndex: 'offTimes',
+        key: 'offTimes',
+        width: 150,
         render: (text: string) => <div>{text}</div>,
+      },
+      {
+        title: L('DataStart'),
+        dataIndex: 'dateStart',
+        key: 'dateStart',
+        width: 150,
+        render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
+      },
+      {
+        title: L('IsActive'),
+        dataIndex: 'isActive',
+        key: 'isActive',
+        width: 150,
+        render: (text: boolean) =>
+          text === true ? (
+            <Tag color="#2db7f5">{L('Đã duyệt')}</Tag>
+          ) : (
+            <Tag color="red">{L('Chưa duyệt')}</Tag>
+          ),
       },
       {
         title: L('Actions'),
@@ -147,7 +184,7 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
     ];
 
     return (
-      <Card>
+      <>
         <Row>
           <Col
             xs={{ span: 4, offset: 0 }}
@@ -158,7 +195,7 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
             xxl={{ span: 2, offset: 0 }}
           >
             {' '}
-            <h2>{L('WorkShifts')}</h2>
+            <h2>{L('UserClasses')}</h2>
           </Col>
           <Col
             xs={{ span: 14, offset: 0 }}
@@ -196,30 +233,18 @@ class Position extends AppComponentBase<IPositionProps, IPositionState> {
               columns={columns}
               pagination={{
                 pageSize: 10,
-                total: positions === undefined ? 0 : positions.totalCount,
+                total: userClasses === undefined ? 0 : userClasses.totalCount,
                 defaultCurrent: 1,
               }}
-              loading={positions === undefined ? true : false}
-              dataSource={positions === undefined ? [] : positions.items}
+              loading={userClasses === undefined}
+              dataSource={userClasses === undefined ? [] : userClasses.items}
               onChange={this.handleTableChange}
             />
           </Col>
         </Row>
-        <CreateOrUpdatePosition
-          formRef={this.formRef}
-          visible={this.state.modalVisible}
-          onCancel={() => {
-            this.setState({
-              modalVisible: false,
-            });
-            this.formRef.current?.resetFields();
-          }}
-          modalType={this.state.positionId === 0 ? 'edit' : 'create'}
-          onCreate={this.handleCreate}
-        />
-      </Card>
+      </>
     );
   }
 }
 
-export default Position;
+export default UserClassData;

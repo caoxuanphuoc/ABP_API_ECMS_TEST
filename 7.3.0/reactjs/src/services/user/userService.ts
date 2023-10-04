@@ -3,7 +3,7 @@ import { CreateOrUpdateUserInput } from './dto/createOrUpdateUserInput';
 import { EntityDto } from '../../services/dto/entityDto';
 import { GetAllUserOutput } from './dto/getAllUserOutput';
 import { PagedResultDto } from '../../services/dto/pagedResultDto';
-import { PagedUserResultRequestDto } from "./dto/PagedUserResultRequestDto";
+import { PagedUserResultRequestDto } from './dto/PagedUserResultRequestDto';
 import { UpdateUserInput } from './dto/updateUserInput';
 import http from '../httpService';
 
@@ -38,8 +38,12 @@ class UserService {
     return result.data.result;
   }
 
-    public async getAll(pagedFilterAndSortedRequest: PagedUserResultRequestDto): Promise<PagedResultDto<GetAllUserOutput>> {
-    let result = await http.get('api/services/app/User/GetAll', { params: pagedFilterAndSortedRequest });
+  public async getAll(
+    pagedFilterAndSortedRequest: PagedUserResultRequestDto
+  ): Promise<PagedResultDto<GetAllUserOutput>> {
+    let result = await http.get('api/services/app/User/GetAll', {
+      params: pagedFilterAndSortedRequest,
+    });
     return result.data.result;
   }
 }
