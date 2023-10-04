@@ -33,7 +33,7 @@ namespace EMS.Teachers
         }
 
         // Kiểm tra xem User có tồn tại hay không
-        protected async Task<User> GetEntitiesAsync(long UserId)
+        protected async Task<User> CheckUserIsExists(long UserId)
         {
             var user = await _userManager.GetUserByIdAsync(UserId);
             if (user != null && user.IsActive && !user.IsDeleted)
@@ -118,15 +118,8 @@ namespace EMS.Teachers
         public override async Task<TeacherDto> CreateAsync(CreateTeacherDto input)
         {
             CheckCreatePermission();
-            var user = await GetEntitiesAsync(input.UserId);
-            var teacher = new Teacher
-            {
-                User = user,
-                SchoolName = input.SchoolName,
-                Certificate = input.Certificate,
-                Wage = input.Wage,
-                StartTime = input.StartTime,
-            };
+            await CheckUserIsExists(input.UserId);
+            var teacher = ObjectMapper.Map<Teacher>(input);
             var createTeacher = await Repository.InsertAndGetIdAsync(teacher);
             var getCreateTeacherId = new EntityDto<long> { Id = createTeacher };
             return await GetAsync(getCreateTeacherId);
@@ -136,13 +129,9 @@ namespace EMS.Teachers
         public override async Task<TeacherDto> UpdateAsync(UpdateTeacherDto input)
         {
             CheckUpdatePermission();
-            var user = await GetEntitiesAsync(input.UserId);
+            await CheckUserIsExists(input.UserId);
             var teacher = await Repository.GetAsync(input.Id);
-            teacher.User = user;
-            teacher.SchoolName = input.SchoolName;
-            teacher.Certificate = input.Certificate;
-            teacher.Wage = input.Wage;
-            teacher.StartTime = input.StartTime;
+            ObjectMapper.Map(input, teacher);
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
         }

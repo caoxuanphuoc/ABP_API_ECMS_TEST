@@ -46,8 +46,8 @@ namespace EMS.Schedules
             return query;
         }
 
-        // Check Class and WorkShift is exists or not
-        protected async Task<(Class classRoom, Room room)> GetEntitiesAsync(long classId, int roomId)
+        // Check Class and Room is exists or not
+        protected async Task<(Class classRoom, Room room)> CheckClassAndRoomIsExists(long classId, int roomId)
         {
             var classRoom = await _classRepository.GetAsync(classId);
             var room = await _roomRepository.GetAsync(roomId);
@@ -74,15 +74,8 @@ namespace EMS.Schedules
         public override async Task<ScheduleDto> CreateAsync(CreateScheduleDto input)
         {
             CheckCreatePermission();
-            var (classRoom, room) = await GetEntitiesAsync(input.ClassId, input.RoomId);
-            var schedule = new Schedule
-            {
-                Date = input.Date,
-                ClassId = classRoom.Id,
-                RoomId = room.Id,
-                DayOfWeek = input.DayOfWeek,
-                Shift = input.Shift,
-            };
+            await CheckClassAndRoomIsExists(input.ClassId, input.RoomId);
+            var schedule = ObjectMapper.Map<Schedule>(input);
             var createSchedule = await Repository.InsertAndGetIdAsync(schedule);
             var getCreateScheduleId = new EntityDto<long> { Id = createSchedule };
             return await GetAsync(getCreateScheduleId);
@@ -91,44 +84,11 @@ namespace EMS.Schedules
         public override async Task<ScheduleDto> UpdateAsync(UpdateScheduleDto input)
         {
             CheckUpdatePermission();
-            var (classRoom, room) = await GetEntitiesAsync(input.ClassId, input.RoomId);
+            await CheckClassAndRoomIsExists(input.ClassId, input.RoomId);
             var schedule = await Repository.GetAsync(input.Id);
-            schedule.Class = classRoom;
-            schedule.Date = input.Date;
-            schedule.RoomId = room.Id;
-            schedule.DayOfWeek = input.DayOfWeek;
-            schedule.Shift = input.Shift;
+            ObjectMapper.Map(schedule, input);
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
         }
-
-        //protected IQueryable<Schedule> CreateFilteredQueryWithClassId(PagedScheduleResultRequestDto input, long classId)
-        //{
-        //    var query = Repository.GetAllIncluding(x => x.Class, x => x.Class.Course);
-        //    if (!input.Keyword.IsNullOrWhiteSpace())
-        //    {
-        //        query = query.Where(x => x.ClassId == classId);
-        //    }
-        //    return query;
-        //}
-
-        //public async Task<PagedResultDto<ScheduleDto>> GetAllWithClassIdFilter(PagedScheduleResultRequestDto input, long classId)
-        //{
-        //    CheckGetAllPermission();
-        //    var query = CreateFilteredQueryWithClassId(input, classId);
-        //    var totalCount = await AsyncQueryableExecuter.CountAsync(query);
-        //    query = ApplySorting(query, input);
-        //    query = ApplyPaging(query, input);
-        //    var schedules = await AsyncQueryableExecuter.ToListAsync(query);
-        //    List<ScheduleDto> listScheduleDtos = new();
-        //    foreach (var schedule in schedules)
-        //    {
-        //        var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
-        //        listScheduleDtos.Add(scheduleDto);
-        //    }
-        //    return new PagedResultDto<ScheduleDto>(totalCount, listScheduleDtos);
-        //}
-
-
     }
 }

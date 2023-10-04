@@ -48,7 +48,11 @@ namespace EMS.TuitionFees
         // Create Query
         protected override IQueryable<TuitionFee> CreateFilteredQuery(PagedTuitionFeeResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.UserClass, x => x.UserClass.User, x => x.UserClass.User.Roles);
+            var query = Repository.GetAllIncluding(x => x.UserClass,
+                                                    x => x.UserClass.User,
+                                                    x => x.UserClass.User.Roles,
+                                                    x => x.UserClass.Class,
+                                                    x => x.UserClass.Class.Course);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
@@ -72,7 +76,7 @@ namespace EMS.TuitionFees
         }
 
         // Check UserClass exists or not
-        protected async Task<UserClass> GetEntitiesAsync(long studentId)
+        protected async Task<UserClass> CheckUserClassIsExists(long studentId)
         {
             var userClass = await _userClassRepository.GetAsync(studentId);
             if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
@@ -105,7 +109,11 @@ namespace EMS.TuitionFees
         public override async Task<TuitionFeeDto> GetAsync(EntityDto<long> input)
         {
             CheckGetPermission();
-            var tuitionFee = await Repository.GetAllIncluding(x => x.UserClass, x => x.UserClass.User, x => x.UserClass.User.Roles)
+            var tuitionFee = await Repository.GetAllIncluding(x => x.UserClass,
+                                                            x => x.UserClass.User,
+                                                            x => x.UserClass.User.Roles,
+                                                            x => x.UserClass.Class,
+                                                            x => x.UserClass.Class.Course)
                                              .FirstOrDefaultAsync(x => x.Id == input.Id)
                                              ?? throw new EntityNotFoundException("Not found UserClass");
             var tuitionFeeDto = ObjectMapper.Map<TuitionFeeDto>(tuitionFee);
@@ -117,13 +125,8 @@ namespace EMS.TuitionFees
         public override async Task<TuitionFeeDto> CreateAsync(CreateTuitionFeeDto input)
         {
             CheckCreatePermission();
-            var userClass = await GetEntitiesAsync(input.StudentId);
-            var tuitionFee = new TuitionFee
-            {
-                StudentId = userClass.Id,
-                Fee = input.Fee,
-                DatePayment = input.DatePayment,
-            };
+            await CheckUserClassIsExists(input.StudentId);
+            var tuitionFee = ObjectMapper.Map<TuitionFee>(input);
             var createTuitionFee = await Repository.InsertAndGetIdAsync(tuitionFee);
             var getCreateTuitionFeeId = new EntityDto<long> { Id = createTuitionFee };
             return await GetAsync(getCreateTuitionFeeId);
@@ -133,11 +136,9 @@ namespace EMS.TuitionFees
         public override async Task<TuitionFeeDto> UpdateAsync(UpdateTuitionFeeDto input)
         {
             CheckUpdatePermission();
-            var userClass = await GetEntitiesAsync(input.StudentId);
+            await CheckUserClassIsExists(input.StudentId);
             var tuitionFee = await Repository.GetAsync(input.Id);
-            tuitionFee.UserClass = userClass;
-            tuitionFee.Fee = input.Fee;
-            tuitionFee.DatePayment = input.DatePayment;
+            ObjectMapper.Map(input, tuitionFee);
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
         }

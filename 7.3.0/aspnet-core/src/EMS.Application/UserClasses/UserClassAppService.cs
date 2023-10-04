@@ -46,7 +46,7 @@ namespace EMS.UserClasses
         }
 
         // Kiểm tra xem User có tồn tại hay không
-        protected async Task<User> GetEntitiesAsync(long UserId)
+        protected async Task<User> CheckUserIsExists(long UserId)
         {
             var user = await _userManager.GetUserByIdAsync(UserId);
             if (user != null && user.IsActive && !user.IsDeleted)
@@ -56,7 +56,7 @@ namespace EMS.UserClasses
             throw new EntityNotFoundException("Not found User");
         }
         // Kiểm tra xem Class có tồn tại hay không
-        protected async Task<Class> GetClassEntitiesAsync(long ClassId)
+        protected async Task<Class> CheckClassIsExists(long ClassId)
         {
             var Eclass = await _classRepository.GetAsync(ClassId);
             if (Eclass != null && Eclass.IsActive && !Eclass.IsDeleted)
@@ -70,16 +70,9 @@ namespace EMS.UserClasses
         public override async Task<UserClassDto> CreateAsync(CreateUserClassDto input)
         {
             CheckCreatePermission();
-            var user = await GetEntitiesAsync(input.UserId);
-            var EClass = await GetClassEntitiesAsync(input.ClassId);
-            var userClass = new UserClass
-            {
-                User = user,
-                Class = EClass,
-                OffTimes = input.OffTimes,
-                DateStart = input.DateStart,
-                IsActive = input.IsActive,
-            };
+            await CheckUserIsExists(input.UserId);
+            await CheckClassIsExists(input.ClassId);
+            var userClass = ObjectMapper.Map<UserClass>(input);
             var createUserClassId = await Repository.InsertAndGetIdAsync(userClass);
             var getCreateUserClassId = new EntityDto<long> { Id = createUserClassId };
             return await GetAsync(getCreateUserClassId);
@@ -158,14 +151,9 @@ namespace EMS.UserClasses
         {
             CheckUpdatePermission();
             var userClass = await Repository.GetAsync(input.Id);
-            var user = await GetEntitiesAsync(input.UserId);
-            var EClass = await GetClassEntitiesAsync(input.ClassId);
-
-            userClass.User = user;
-            userClass.Class = EClass;
-            userClass.OffTimes = input.OffTimes;
-            userClass.DateStart = input.DateStart;
-            userClass.IsActive = input.IsActive;
+            await CheckUserIsExists(input.UserId);
+            await CheckClassIsExists(input.ClassId);
+            ObjectMapper.Map(input, userClass);
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
         }

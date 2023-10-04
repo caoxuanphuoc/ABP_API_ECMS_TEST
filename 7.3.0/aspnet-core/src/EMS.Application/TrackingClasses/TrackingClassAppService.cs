@@ -48,7 +48,11 @@ namespace EMS.TrackingClasses
         // Create Query
         protected override IQueryable<TrackingClass> CreateFilteredQuery(PagedTrackingClassResultRequestDto input)
         {
-            var query = Repository.GetAllIncluding(x => x.UserClass, x => x.UserClass.User, x => x.UserClass.User.Roles);
+            var query = Repository.GetAllIncluding(x => x.UserClass,
+                                                    x => x.UserClass.User,
+                                                    x => x.UserClass.User.Roles,
+                                                    x => x.UserClass.Class,
+                                                    x => x.UserClass.Class.Course);
 
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
@@ -71,7 +75,7 @@ namespace EMS.TrackingClasses
         }
 
         // Check UserClass exists or not
-        protected async Task<UserClass> GetEntitiesAsync(long studentId)
+        protected async Task<UserClass> CheckUserClassIsExists(long studentId)
         {
             var userClass = await _userClassRepository.GetAsync(studentId);
             if (userClass != null && userClass.IsActive && !userClass.IsDeleted)
@@ -104,7 +108,11 @@ namespace EMS.TrackingClasses
         public override async Task<TrackingClassDto> GetAsync(EntityDto<long> input)
         {
             CheckGetPermission();
-            var trackingClass = await Repository.GetAllIncluding(x => x.UserClass, x => x.UserClass.User, x => x.UserClass.User.Roles)
+            var trackingClass = await Repository.GetAllIncluding(x => x.UserClass,
+                                                                x => x.UserClass.User,
+                                                                x => x.UserClass.User.Roles,
+                                                                x => x.UserClass.Class,
+                                                                x => x.UserClass.Class.Course)
                                              .FirstOrDefaultAsync(x => x.Id == input.Id)
                                              ?? throw new EntityNotFoundException("Not found TrackingClass");
             var trackingClassDto = ObjectMapper.Map<TrackingClassDto>(trackingClass);
@@ -116,13 +124,8 @@ namespace EMS.TrackingClasses
         public override async Task<TrackingClassDto> CreateAsync(CreateTrackingClassDto input)
         {
             CheckCreatePermission();
-            var userClass = await GetEntitiesAsync(input.StudentId);
-            var trackingClass = new TrackingClass
-            {
-                StudentId = userClass.Id,
-                Date = input.Date,
-                CheckInTime = input.CheckInTime,
-            };
+            await CheckUserClassIsExists(input.StudentId);
+            var trackingClass = ObjectMapper.Map<TrackingClass>(input);
             var createTrackingClass = await Repository.InsertAndGetIdAsync(trackingClass);
             var getCreateTrackingClassId = new EntityDto<long> { Id = createTrackingClass };
             return await GetAsync(getCreateTrackingClassId);
@@ -132,11 +135,9 @@ namespace EMS.TrackingClasses
         public override async Task<TrackingClassDto> UpdateAsync(UpdateTrackingClassDto input)
         {
             CheckUpdatePermission();
-            var userClass = await GetEntitiesAsync(input.StudentId);
+            await CheckUserClassIsExists(input.StudentId);
             var trackingClass = await Repository.GetAsync(input.Id);
-            trackingClass.UserClass = userClass;
-            trackingClass.Date = input.Date;
-            trackingClass.CheckInTime = input.CheckInTime;
+            ObjectMapper.Map(input, trackingClass);
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
         }
