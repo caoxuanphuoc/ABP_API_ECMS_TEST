@@ -41,6 +41,12 @@ namespace EMS.Schedules
             var query = Repository.GetAllIncluding(x => x.Class, x => x.Class.Course, x => x.Room);
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
+                query = query.Where(x => x.Class.Code.ToLower().Contains(input.Keyword.ToLower()) ||
+                                    x.Room.RoomName.ToLower().Contains(input.Keyword.ToLower()) &&
+                                    x.ClassId == input.ClassId);
+            }
+            else
+            {
                 query = query.Where(x => x.ClassId == input.ClassId);
             }
             return query;
@@ -63,7 +69,7 @@ namespace EMS.Schedules
         {
             CheckGetPermission();
             var schedule = await Repository.GetAllIncluding(
-                                        x => x.Class, x => x.Class.Course)
+                                        x => x.Class, x => x.Class.Course, x => x.Room)
                                         .FirstOrDefaultAsync(x => x.Id == input.Id)
                                         ?? throw new EntityNotFoundException("Not found Schedule");
             var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
