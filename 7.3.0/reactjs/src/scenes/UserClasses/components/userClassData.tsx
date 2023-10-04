@@ -7,10 +7,18 @@ import AppComponentBase from '../../../components/AppComponentBase';
 import UserClassStore from '../../../stores/userClassStore';
 import { EntityDto } from '../../../services/dto/entityDto';
 import { L } from '../../../lib/abpUtility';
+import { PagedResultDto } from '../../../services/dto/pagedResultDto';
+import { GetUserClassOutput } from '../../../services/userClass/dto/getUserClassOutput';
+import CreateOrUpdateUserClass from './createOrUpdateUserClass';
+import UserStore from '../../../stores/userStore';
+import ClassStore from '../../../stores/classStore';
 
 export interface IUserClassIsActiveDataProps {
   isActive: boolean;
   userClassStore: UserClassStore;
+  userClasses: PagedResultDto<GetUserClassOutput>;
+  userStore: UserStore;
+  classStore: ClassStore;
 }
 
 export interface IUserClassIsActiveDataState {
@@ -19,6 +27,8 @@ export interface IUserClassIsActiveDataState {
   skipCount: number;
   userClassId: number;
   filter: string;
+  selectedClassId: number;
+  selectedUserId: number;
 }
 
 const { confirm } = Modal;
@@ -36,6 +46,8 @@ class UserClassData extends AppComponentBase<
     skipCount: 0,
     userClassId: 0,
     filter: '',
+    selectedClassId: 0,
+    selectedUserId: 0,
   };
 
   async componentDidMount() {
@@ -71,7 +83,11 @@ class UserClassData extends AppComponentBase<
       await this.props.userClassStore.get(entityDto);
     }
 
-    this.setState({ userClassId: entityDto.id });
+    this.setState({
+      selectedClassId: this.props.userClassStore.editUserClass?.class?.id,
+      selectedUserId: this.props.userClassStore.editUserClass?.user?.id,
+      userClassId: entityDto.id,
+    });
     this.Modal();
 
     setTimeout(() => {
@@ -93,10 +109,12 @@ class UserClassData extends AppComponentBase<
     const form = this.formRef.current;
 
     form!.validateFields().then(async (values: any) => {
+      const updateValues = { ...values };
       if (this.state.userClassId === 0) {
-        await this.props.userClassStore.create(values);
+        updateValues.isActive = this.props.isActive;
+        await this.props.userClassStore.create(updateValues);
       } else {
-        await this.props.userClassStore.update({ ...values, id: this.state.userClassId });
+        await this.props.userClassStore.update({ ...updateValues, id: this.state.userClassId });
       }
 
       await this.getAll();
@@ -110,8 +128,7 @@ class UserClassData extends AppComponentBase<
   };
 
   public render() {
-    const { userClasses } = this.props.userClassStore;
-
+    const { userClasses } = this.props;
     const columns = [
       {
         title: L('FullName'),
@@ -242,6 +259,23 @@ class UserClassData extends AppComponentBase<
             />
           </Col>
         </Row>
+        <CreateOrUpdateUserClass
+          formRef={this.formRef}
+          visible={this.state.modalVisible}
+          onCancel={() => {
+            this.setState({
+              modalVisible: false,
+            });
+            this.formRef.current?.resetFields();
+          }}
+          modalType={this.state.userClassId === 0 ? 'create' : 'edit'}
+          onCreate={this.handleCreate}
+          isActive={this.props.isActive}
+          selectedClassId={this.state.selectedClassId}
+          classStore={this.props.classStore}
+          selectedUserId={this.state.selectedUserId}
+          userStore={this.props.userStore}
+        />
       </>
     );
   }
