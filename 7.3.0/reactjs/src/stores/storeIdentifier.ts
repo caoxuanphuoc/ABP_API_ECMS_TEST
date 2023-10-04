@@ -11,8 +11,6 @@ export default class Stores {
 
   static AccountStore = 'accountStore';
 
-  static WorkShiftStore = 'workShiftStore';
-
   static CourseStore = 'courseStore';
 
   static ClassStore = 'classStore';
@@ -22,4 +20,6 @@ export default class Stores {
   static TeacherStore = 'teacherStore';
 
   static UserClassStore = 'userClassStore';
+
+  static RoomStore = 'roomStore';
 }

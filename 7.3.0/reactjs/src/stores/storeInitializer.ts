@@ -4,12 +4,12 @@ import UserStore from './userStore';
 import SessionStore from './sessionStore';
 import AuthenticationStore from './authenticationStore';
 import AccountStore from './accountStore';
-import WorkShiftStore from './workShiftStore';
 import CourseStore from './courseStore';
 import ClassStore from './classStore';
 import ScheduleStore from './scheduleStore';
 import TeacherStore from './teacherStore';
 import UserClassStore from './userClassStore';
+import RoomStore from './roomStore';
 
 export default function initializeStores() {
   return {
@@ -19,11 +19,11 @@ export default function initializeStores() {
     userStore: new UserStore(),
     sessionStore: new SessionStore(),
     accountStore: new AccountStore(),
-    workShiftStore: new WorkShiftStore(),
     courseStore: new CourseStore(),
     classStore: new ClassStore(),
     scheduleStore: new ScheduleStore(),
     teacherStore: new TeacherStore(),
     userClassStore: new UserClassStore(),
+    roomStore: new RoomStore(),
   };
 }

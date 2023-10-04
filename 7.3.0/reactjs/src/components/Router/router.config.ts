@@ -4,11 +4,11 @@ import {
   TagsOutlined,
   AppstoreOutlined,
   InfoCircleOutlined,
-  ClockCircleOutlined,
   BookOutlined,
   SolutionOutlined,
   ReadOutlined,
   UsergroupAddOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons';
 import LoadableComponent from './../Loadable/index';
 
@@ -114,13 +114,13 @@ export const appRouters: any = [
     component: LoadableComponent(() => import('../../scenes/Courses')),
   },
   {
-    path: '/workShifts',
+    path: '/rooms',
     permission: 'Pages.Users',
-    title: 'WorkShifts',
-    name: 'workShift',
-    icon: ClockCircleOutlined,
+    title: 'Rooms',
+    name: 'room',
+    icon: ProfileOutlined,
     showInMenu: true,
-    component: LoadableComponent(() => import('../../scenes/WorkShifts')),
+    component: LoadableComponent(() => import('../../scenes/Rooms')),
   },
   {
     path: '/about',
