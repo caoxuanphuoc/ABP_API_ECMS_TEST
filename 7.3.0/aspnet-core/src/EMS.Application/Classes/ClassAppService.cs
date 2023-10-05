@@ -60,7 +60,7 @@ namespace EMS.Classes
             return query.OrderBy(r => r.StartDate);
         }
         // Check Course exists or not
-        protected async Task<Course> GetEntitiesAsync(long courseId)
+        protected async Task<Course> CheckCourseIsExists(long courseId)
         {
             var course = await _courseRepository.GetAsync(courseId);
             if ((course != null && course.IsDeleted) || course == null)
@@ -111,7 +111,6 @@ namespace EMS.Classes
         {
             DateTime Temp = input.StartTime;
             List<ScheduleDto> result = new();
-            var room = await CheckRoomIsExists(input.RoomId);
             while (Temp <= input.EndTime)
             {
                 DayOfWeek checkDOW = Temp.DayOfWeek;
@@ -119,15 +118,7 @@ namespace EMS.Classes
                 {
                     if (e.DateOfWeek.ToString() == checkDOW.ToString())
                     {
-
-                        Schedule schedule = new()
-                        {
-                            Date = Temp,
-                            ClassId = input.ClassId,
-                            RoomId = room.Id,
-                            DayOfWeek = e.DateOfWeek,
-                            Shift = e.ShiftTime
-                        };
+                        var schedule = ObjectMapper.Map<Schedule>(input);
                         await _scheduleRepository.InsertAsync(schedule);
                         var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
                         result.Add(scheduleDto);
@@ -143,7 +134,8 @@ namespace EMS.Classes
         public override async Task<ClassDto> CreateAsync(CreateClassDto input)
         {
             CheckCreatePermission();
-            await GetEntitiesAsync(input.CourseId);
+            await CheckCourseIsExists(input.CourseId);
+            await CheckRoomIsExists(input.RoomId);
             var classRoom = ObjectMapper.Map<Class>(input);
             var createClassId = await Repository.InsertAndGetIdAsync(classRoom);
             var createAutomaticDto = new CreateAutomaticDto
@@ -164,7 +156,7 @@ namespace EMS.Classes
         public override async Task<ClassDto> UpdateAsync(UpdateClassDto input)
         {
             CheckUpdatePermission();
-            await GetEntitiesAsync(input.CourseId);
+            await CheckCourseIsExists(input.CourseId);
             var classRoom = await Repository.GetAsync(input.Id);
             ObjectMapper.Map(input, classRoom);
             await base.UpdateAsync(input);

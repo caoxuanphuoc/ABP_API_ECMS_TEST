@@ -15,11 +15,13 @@ import { CourseCreen } from './components/Courses/courseScreen';
 import Course from './components/Courses/course';
 import ScheduleStore from '../../stores/scheduleStore';
 import Schedule from './components/Schedules/Schedule';
+import RoomStore from '../../stores/roomStore';
 
 export interface IClassProps {
   classStore: ClassStore;
   courseStore: CourseStore;
   scheduleStore: ScheduleStore;
+  roomStore: RoomStore;
 }
 
 export interface IClassState {
@@ -29,6 +31,7 @@ export interface IClassState {
   classId: number;
   filter: string;
   selectedCourseId: number;
+  selectedRoomId: number;
   course: CourseCreen;
   modalVisibleCourse: boolean;
   modalVisibleSchedule: boolean;
@@ -37,7 +40,7 @@ export interface IClassState {
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore)
+@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore, Stores.RoomStore)
 @observer
 class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();
@@ -49,6 +52,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     classId: 0,
     filter: '',
     selectedCourseId: 0,
+    selectedRoomId: 0,
     course: {
       code: '',
       courseName: '',
@@ -149,9 +153,15 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
       await this.props.classStore.createClass();
     } else {
       await this.props.classStore.get(entityDto);
+      await this.props.scheduleStore.getAll({
+        maxResultCount: 10,
+        skipCount: 0,
+        keyword: '',
+        classId: entityDto.id,
+      });
     }
-
     this.setState({
+      selectedRoomId: this.props.scheduleStore.schedules?.items[0]?.room.id,
       selectedCourseId: this.props.classStore.editClass?.course?.id,
       classId: entityDto.id,
     });
@@ -176,8 +186,12 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     const form = this.formRef.current;
 
     form!.validateFields().then(async (values: any) => {
+      const updateValues = { ...values };
+      updateValues.startDate = moment(updateValues.dateRange[0]);
+      updateValues.endDate = moment(updateValues.dateRange[1]);
+      console.log(updateValues);
       if (this.state.classId === 0) {
-        await this.props.classStore.create(values);
+        // await this.props.classStore.create(values);
       } else {
         await this.props.classStore.update({ ...values, id: this.state.classId });
       }
@@ -338,6 +352,8 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           onCreate={this.handleCreate}
           courseStore={this.props.courseStore}
           selectedCourseId={this.state.selectedCourseId}
+          roomStore={this.props.roomStore}
+          selectedRoomId={this.state.selectedRoomId}
         />
         <Course
           visible={this.state.modalVisibleCourse}
