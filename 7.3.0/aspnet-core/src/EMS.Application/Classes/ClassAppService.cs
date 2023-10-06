@@ -107,7 +107,7 @@ namespace EMS.Classes
         /// <param name="roomId"></param>
         /// <param name="LsWorkShift"></param>
         /// <returns></returns>
-        protected async Task CreateAutomatic(CreateAutomaticDto input)
+        protected async Task<PagedResultDto<ScheduleDto>> CreateAutomatic(CreateAutomaticDto input)
         {
             DateTime Temp = input.StartTime;
             List<ScheduleDto> result = new();
@@ -118,7 +118,14 @@ namespace EMS.Classes
                 {
                     if (e.DateOfWeek.ToString() == checkDOW.ToString())
                     {
-                        var schedule = ObjectMapper.Map<Schedule>(input);
+                        Schedule schedule = new()
+                        {
+                            Date = Temp,
+                            ClassId = input.ClassId,
+                            RoomId = input.RoomId,
+                            DayOfWeek = e.DateOfWeek,
+                            Shift = e.ShiftTime
+                        };
                         await _scheduleRepository.InsertAsync(schedule);
                         var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
                         result.Add(scheduleDto);
@@ -128,6 +135,7 @@ namespace EMS.Classes
                 Temp = Temp.AddDays(1);
 
             }
+            return new PagedResultDto<ScheduleDto>(result.Count, result); ;
         }
 
         //Create new Class

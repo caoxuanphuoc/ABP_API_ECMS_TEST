@@ -19,7 +19,7 @@ class ClassService {
 
   public async delete(entityDto: EntityDto) {
     let result = await http.delete('api/services/app/Class/Delete', {
-      params: { id: entityDto.id },
+      params: entityDto,
     });
     return result.data;
   }
