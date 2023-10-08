@@ -1,6 +1,7 @@
 import { FormInstance } from 'antd/lib/form';
 import React from 'react';
 import { Modal, Form, Select, DatePicker, Input, Checkbox, Row, Col } from 'antd';
+import moment from 'moment';
 import CourseStore from '../../../stores/courseStore';
 import { L } from '../../../lib/abpUtility';
 import rules from './createOrUpdateClass.validateion';
@@ -8,8 +9,7 @@ import RoomStore from '../../../stores/roomStore';
 import DynamicFieldSet from './lsWorkSheet';
 import { WorkShiftDto } from '../../../services/schedule/dto/workShiftDto';
 
-const { RangePicker } = DatePicker;
-
+type PickerType = 'date';
 export interface ICreateOrUpdateClassProps {
   visible: boolean;
   onCancel: () => void;
@@ -20,12 +20,13 @@ export interface ICreateOrUpdateClassProps {
   selectedCourseId: number;
   roomStore: RoomStore;
   selectedRoomId: number;
+  onUpdateLsWorkSheet: (newLsWorkSheet: WorkShiftDto[]) => void;
 }
 
 export interface ICreateOrUpdateClassState {
   maxResultCourseCount: number;
   maxResultRoomCount: number;
-  lsWorkSheet: WorkShiftDto[];
+  type: PickerType;
 }
 
 class CreateOrUpdateClass extends React.Component<
@@ -37,7 +38,7 @@ class CreateOrUpdateClass extends React.Component<
     this.state = {
       maxResultCourseCount: 10,
       maxResultRoomCount: 10,
-      lsWorkSheet: [],
+      type: 'date',
     };
   }
 
@@ -82,8 +83,17 @@ class CreateOrUpdateClass extends React.Component<
     return Promise.resolve();
   };
 
-  handleUpdateLsWorkSheet = (newLsWorkSheet: WorkShiftDto[]) => {
-    this.setState({ lsWorkSheet: newLsWorkSheet });
+  validateStartDate = (rule: any, value: any) => {
+    const now = moment().startOf('day');
+    if (!value || !value.isValid()) {
+      return Promise.reject('Please select a valid start date');
+    }
+
+    if (value.isBefore(now)) {
+      return Promise.reject('Start date must be greater than or equal to the current date');
+    }
+
+    return Promise.resolve();
   };
 
   render() {
@@ -135,10 +145,11 @@ class CreateOrUpdateClass extends React.Component<
       selectedCourseId,
       roomStore,
       selectedRoomId,
+      onUpdateLsWorkSheet,
     } = this.props;
     const courses = courseStore.courses === undefined ? [] : courseStore.courses.items;
     const rooms = roomStore.rooms === undefined ? [] : roomStore.rooms.items;
-    const { lsWorkSheet } = this.state;
+    const { type } = this.state;
     return (
       <Modal
         visible={visible}
@@ -214,6 +225,7 @@ class CreateOrUpdateClass extends React.Component<
                     validator: this.validRoomValue,
                   },
                 ]}
+                // initialValue={this.state.type}
               >
                 <Select
                   options={rooms.map((room) => ({
@@ -228,35 +240,56 @@ class CreateOrUpdateClass extends React.Component<
           <Row gutter={[24, 24]}>
             <Col span={12}>
               <Form.Item
-                label={L('DateRange')}
+                label={L('Start Date')}
                 {...formItemLayout}
-                name={['dateRange']}
+                name={['startDate']}
                 rules={[
                   {
-                    type: 'array',
                     required: true,
-                    message: 'Please select a date range',
+                    message: 'Please select a start date',
+                  },
+                  {
+                    validator: this.validateStartDate,
+                  },
+                ]}
+                valuePropName={type}
+              >
+                <DatePicker />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label={L('End Date')}
+                {...formItemLayout}
+                name={['endDate']}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please select an end date',
                   },
                   ({ getFieldValue }) => ({
                     validator(_, value) {
-                      const [startDate, endDate] = value;
+                      const startDate = getFieldValue('startDate');
 
-                      if (!startDate || !endDate || !startDate.isValid() || !endDate.isValid()) {
-                        return Promise.reject('Please select a valid date range');
+                      if (!value || !startDate || !startDate.isValid() || !value.isValid()) {
+                        return Promise.reject('Please select valid dates');
                       }
 
-                      if (startDate.isAfter(endDate)) {
-                        return Promise.reject('Start date must be before end date');
+                      if (startDate.isAfter(value)) {
+                        return Promise.reject('End date must be after start date');
                       }
 
                       return Promise.resolve();
                     },
                   }),
                 ]}
+                valuePropName={type}
               >
-                <RangePicker />
+                <DatePicker />
               </Form.Item>
             </Col>
+          </Row>
+          <Row gutter={[24, 24]}>
             <Col span={12}>
               <Form.Item
                 label={L('CurrentStudent')}
@@ -267,8 +300,6 @@ class CreateOrUpdateClass extends React.Component<
                 <Input />
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={[24, 24]}>
             <Col span={12}>
               <Form.Item
                 label={L('LessionTimes')}
@@ -279,6 +310,8 @@ class CreateOrUpdateClass extends React.Component<
                 <Input />
               </Form.Item>
             </Col>
+          </Row>
+          <Row gutter={[24, 24]}>
             <Col span={12}>
               <Form.Item
                 label={L('IsActive')}
@@ -290,7 +323,7 @@ class CreateOrUpdateClass extends React.Component<
               </Form.Item>
             </Col>
           </Row>
-          <DynamicFieldSet lsWorkSheet={lsWorkSheet} onUpdateLsWorkSheet={this.handleUpdateLsWorkSheet} />
+          <DynamicFieldSet onUpdateLsWorkSheet={onUpdateLsWorkSheet} />
         </Form>
       </Modal>
     );

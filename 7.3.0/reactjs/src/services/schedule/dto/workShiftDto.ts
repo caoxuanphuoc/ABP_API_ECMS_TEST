@@ -3,5 +3,5 @@ import { Shift } from "./shift"
 
 export interface WorkShiftDto {
     dayOfWeek: DayOfTheWeek
-    shift: Shift
+    shiftTime: Shift
 }

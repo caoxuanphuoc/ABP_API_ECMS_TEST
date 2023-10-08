@@ -1,20 +1,19 @@
 import React from 'react';
 import { FormInstance } from 'antd/lib/form';
-import { Button, Card, Col, Dropdown, Menu, Modal, Row, Table } from 'antd';
+import { Button, Card, Col, Dropdown, Input, Menu, Modal, Row, Table } from 'antd';
 import moment from 'moment';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import ScheduleStore from '../../../../stores/scheduleStore';
 import { EntityDto } from '../../../../services/dto/entityDto';
 import { L } from '../../../../lib/abpUtility';
 import AppComponentBase from '../../../../components/AppComponentBase';
-import { CourseCreen } from '../Courses/courseScreen';
+import { Shift, shiftNames } from '../../../../services/schedule/dto/shift';
 
 export interface IScheduleProps {
   visible: boolean;
   scheduleStore: ScheduleStore;
   classId: number;
   onCancel: () => void;
-  course: CourseCreen;
 }
 
 export interface IScheduleState {
@@ -23,12 +22,10 @@ export interface IScheduleState {
   skipCount: number;
   scheduleId: number;
   filter: string;
-  code: string;
-  courseName: string;
 }
 
 const { confirm } = Modal;
-// const { Search } = Input;
+const { Search } = Input;
 
 class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
   formRef = React.createRef<FormInstance>();
@@ -39,12 +36,13 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     skipCount: 0,
     scheduleId: 0,
     filter: '',
-    code: '',
-    courseName: '',
   };
 
-  async componentDidMount() {
-    this.getAll();
+  async componentDidUpdate(prevProps: IScheduleProps) {
+    if (prevProps.classId !== this.props.classId) {
+      // Nếu classId đã thay đổi, gọi getAll
+      await this.getAll();
+    }
   }
 
   async getAll() {
@@ -113,10 +111,17 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     });
   };
 
+  handleSearch = (value: string) => {
+    this.setState({ filter: value }, async () => await this.getAll());
+  };
+
   public render() {
     const { schedules } = this.props.scheduleStore;
+    const { onCancel, visible } = this.props;
 
-    const { onCancel, visible, course } = this.props;
+    const classCode = schedules?.items[0]?.class?.code;
+    const courseName = schedules?.items[0]?.class?.course?.courseName;
+    const roomName = schedules?.items[0]?.room?.roomName;
 
     const columns = [
       {
@@ -127,29 +132,18 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
         render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
       },
       {
-        title: L('Code'),
-        dataIndex: 'code',
-        key: 'code',
+        title: L('DayOfWeek'),
+        dataIndex: 'dayOfWeek',
+        key: 'dayOfWeek',
         width: 150,
-        render: (text: string, record: any) => <div>{record.workShift.code}</div>,
+        render: (text: string) => <div>{text}</div>,
       },
       {
-        title: L('TimeStart'),
-        dataIndex: 'timeStart',
-        key: 'timeStart',
-        with: 350,
-        render: (text: string, record: any) => (
-          <div>{moment(record.workShift.timeStart).format('HH:mm')}</div>
-        ),
-      },
-      {
-        title: L('EndStart'),
-        dataIndex: 'endStart',
-        key: 'endStart',
-        with: 350,
-        render: (text: string, record: any) => (
-          <div>{moment(record.workShift.endStart).format('HH:mm')}</div>
-        ),
+        title: L('Shift'),
+        dataIndex: 'shift',
+        key: 'shift',
+        with: 150,
+        render: (text: Shift) => <div>{shiftNames[Shift[text]]}</div>,
       },
       {
         title: L('Actions'),
@@ -184,7 +178,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
         okText={L('OK')}
         onCancel={onCancel}
         onOk={onCancel}
-        title={<h2>{`Schedule - ${course.code} - ${course.courseName}`}</h2>}
+        title={<h2>{`Schedule - ${classCode} - ${courseName} - ${roomName}`}</h2>}
         destroyOnClose
         width={700}
       >
@@ -204,6 +198,11 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
                 icon={<PlusOutlined />}
                 onClick={() => this.createOrUpdateModalOpen({ id: 0 })}
               />
+            </Col>
+          </Row>
+          <Row>
+            <Col sm={{ span: 10, offset: 0 }}>
+              <Search placeholder={this.L('Filter')} onSearch={this.handleSearch} />
             </Col>
           </Row>
           <Row style={{ marginTop: 20 }}>

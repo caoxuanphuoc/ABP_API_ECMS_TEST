@@ -7,18 +7,17 @@ import { Shift, shiftNames } from '../../../services/schedule/dto/shift';
 import { L } from '../../../lib/abpUtility';
 
 interface DynamicFieldSetProps {
-  lsWorkSheet: WorkShiftDto[];
   onUpdateLsWorkSheet: (newLsWorkSheet: WorkShiftDto[]) => void;
 }
 
 interface DynamicFieldSetState {
-  fields: { key: string; dayOfWeek: DayOfTheWeek; shift: Shift }[];
+  fields: { key: string; dayOfWeek: DayOfTheWeek; shiftTime: Shift }[];
 }
 
 class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicFieldSetState> {
   constructor(props: DynamicFieldSetProps) {
     super(props);
-    const fields = [{ key: '', dayOfWeek: DayOfTheWeek.Monday, shift: Shift.Tiet_1_2 }];
+    const fields = [{ key: '', dayOfWeek: DayOfTheWeek.Monday, shiftTime: Shift.Tiet_1_2 }];
     this.state = {
       fields,
     };
@@ -30,40 +29,44 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
     const newKey = Math.random().toString(36).substring(2);
     const newFields = [
       ...fields,
-      { key: newKey, dayOfWeek: DayOfTheWeek.Monday, shift: Shift.Tiet_1_2 },
+      { key: newKey, dayOfWeek: DayOfTheWeek.Monday, shiftTime: Shift.Tiet_1_2 },
     ];
-    this.setState({ fields: newFields });
+    this.setState({ fields: newFields }, this.updateFormattedLsWorkSheet);
   };
 
   handleRemoveField = (keyToRemove: string) => {
     const { fields } = this.state;
     const newFields = fields.filter((field) => field.key !== keyToRemove);
-    this.setState({ fields: newFields });
+    this.setState({ fields: newFields }, this.updateFormattedLsWorkSheet);
   };
 
   handleDayOfWeekChange = (key: string, dayOfWeek: DayOfTheWeek) => {
     this.updateField(key, { dayOfWeek });
   };
 
-  handleShiftChange = (key: string, shift: Shift) => {
-    this.updateField(key, { shift });
+  handleShiftChange = (key: string, shiftTime: Shift) => {
+    this.updateField(key, { shiftTime });
   };
 
   updateField = (
     key: string,
-    updatedValues: Partial<{ dayOfWeek: DayOfTheWeek; shift: Shift }>
+    updatedValues: Partial<{ dayOfWeek: DayOfTheWeek; shiftTime: Shift }>
   ) => {
     const { fields } = this.state;
-    // const { onUpdateLsWorkSheet } = this.props;
     const newFields = fields.map((field) =>
       field.key === key ? { ...field, ...updatedValues } : field
     );
-    this.setState({ fields: newFields });
-    // const formattedLsWorkSheet = newFields.map(({ dayOfWeek, shift }) => ({
-    //   dateOfWeek: dayOfWeek,
-    //   shiftTime: shift,
-    // }));
-    // onUpdateLsWorkSheet(formattedLsWorkSheet);
+    this.setState({ fields: newFields }, this.updateFormattedLsWorkSheet);
+  };
+
+  updateFormattedLsWorkSheet = () => {
+    const { fields } = this.state;
+    const { onUpdateLsWorkSheet } = this.props;
+    const formattedListWorkSheets = fields.map(({ dayOfWeek, shiftTime }) => ({
+      dayOfWeek,
+      shiftTime,
+    }));
+    onUpdateLsWorkSheet(formattedListWorkSheets);
   };
 
   render() {
@@ -104,7 +107,7 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
               <Col span={11}>
                 <Form.Item label={L('ShiftTime')}>
                   <Select
-                    value={field.shift}
+                    value={field.shiftTime}
                     onChange={(value) => this.handleShiftChange(field.key, value as Shift)}
                   >
                     {Object.entries(shiftNames).map(([shift, shiftName]) => (

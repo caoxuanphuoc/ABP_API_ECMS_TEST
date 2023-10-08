@@ -16,6 +16,7 @@ import Course from './components/Courses/course';
 import ScheduleStore from '../../stores/scheduleStore';
 import Schedule from './components/Schedules/Schedule';
 import RoomStore from '../../stores/roomStore';
+import { WorkShiftDto } from '../../services/schedule/dto/workShiftDto';
 
 export interface IClassProps {
   classStore: ClassStore;
@@ -35,6 +36,8 @@ export interface IClassState {
   course: CourseCreen;
   modalVisibleCourse: boolean;
   modalVisibleSchedule: boolean;
+  lsWorkSheet: WorkShiftDto[];
+  courseId: number;
 }
 
 const { confirm } = Modal;
@@ -64,6 +67,8 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     },
     modalVisibleCourse: false,
     modalVisibleSchedule: false,
+    lsWorkSheet: [],
+    courseId: 0,
   };
 
   async componentDidMount() {
@@ -132,21 +137,10 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     this.ModalCourse();
   }
 
-  async getSchedule(id: EntityDto, code: any) {
-    const { course } = this.state;
-    const { courseStore } = this.props;
-    await courseStore.get(id);
-
-    const result = courseStore.editCourse;
-
-    const updateCourse = {
-      ...course,
-      code: code.code,
-      courseName: result.courseName,
-    };
-    this.setState({ course: updateCourse });
+  getSchedule = async (entityDto: EntityDto) => {
+    await this.setState({ classId: entityDto.id });
     this.ModalSchedule();
-  }
+  };
 
   async createOrUpdateModalOpen(entityDto: EntityDto) {
     if (entityDto.id === 0) {
@@ -187,11 +181,9 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
 
     form!.validateFields().then(async (values: any) => {
       const updateValues = { ...values };
-      updateValues.startDate = moment(updateValues.dateRange[0]);
-      updateValues.endDate = moment(updateValues.dateRange[1]);
-      console.log(updateValues);
+      updateValues.lsWorkSheet = this.state.lsWorkSheet;
       if (this.state.classId === 0) {
-        // await this.props.classStore.create(values);
+        await this.props.classStore.create(updateValues);
       } else {
         await this.props.classStore.update({ ...values, id: this.state.classId });
       }
@@ -206,8 +198,13 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     this.setState({ filter: value }, async () => await this.getAll());
   };
 
+  handleUpdateLsWorkSheet = (newLsWorkSheet: WorkShiftDto[]) => {
+    this.setState({ lsWorkSheet: newLsWorkSheet });
+  };
+
   public render() {
     const { classes } = this.props.classStore;
+    const { classId } = this.state;
     const columns = [
       {
         title: L('Code'),
@@ -254,7 +251,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                   <Menu.Item
                     onClick={() =>
                       this.getCourse(
-                        { id: item.id },
+                        { id: item.course.id },
                         { code: item.code },
                         { limitStudent: item.limitStudent },
                         { currentStudent: item.currentStudent },
@@ -264,7 +261,13 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                   >
                     {L('Course')}
                   </Menu.Item>
-                  <Menu.Item onClick={() => this.getSchedule({ id: item.id }, { code: item.code })}>
+                  <Menu.Item
+                    onClick={() =>
+                      this.getSchedule({
+                        id: item.id,
+                      })
+                    }
+                  >
                     {L('Schedule')}
                   </Menu.Item>
                 </Menu>
@@ -354,6 +357,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           selectedCourseId={this.state.selectedCourseId}
           roomStore={this.props.roomStore}
           selectedRoomId={this.state.selectedRoomId}
+          onUpdateLsWorkSheet={this.handleUpdateLsWorkSheet}
         />
         <Course
           visible={this.state.modalVisibleCourse}
@@ -372,8 +376,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
             });
           }}
           scheduleStore={this.props.scheduleStore}
-          classId={this.state.classId}
-          course={this.state.course}
+          classId={classId}
         />
       </Card>
     );
