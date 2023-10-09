@@ -4,6 +4,7 @@ import { Button, Card, Col, Dropdown, Input, Menu, Modal, Row, Table, Tag } from
 import moment from 'moment';
 import { FormInstance } from 'antd/lib/form';
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ClassStore from '../../stores/classStore';
 import CourseStore from '../../stores/courseStore';
 import Stores from '../../stores/storeIdentifier';
@@ -12,9 +13,7 @@ import { EntityDto } from '../../services/dto/entityDto';
 import { L } from '../../lib/abpUtility';
 import CreateOrUpdateClass from './components/createOrUpdateClass';
 import { CourseCreen } from './components/Courses/courseScreen';
-import Course from './components/Courses/course';
 import ScheduleStore from '../../stores/scheduleStore';
-import Schedule from './components/Schedules/Schedule';
 import RoomStore from '../../stores/roomStore';
 import { WorkShiftDto } from '../../services/schedule/dto/workShiftDto';
 
@@ -34,8 +33,6 @@ export interface IClassState {
   selectedCourseId: number;
   selectedRoomId: number;
   course: CourseCreen;
-  modalVisibleCourse: boolean;
-  modalVisibleSchedule: boolean;
   lsWorkSheet: WorkShiftDto[];
   courseId: number;
 }
@@ -43,7 +40,12 @@ export interface IClassState {
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore, Stores.RoomStore)
+@inject(
+  Stores.ClassStore,
+  Stores.CourseStore,
+  Stores.ScheduleStore,
+  Stores.RoomStore,
+)
 @observer
 class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();
@@ -65,8 +67,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
       currentStudent: 0,
       lessionTimes: 0,
     },
-    modalVisibleCourse: false,
-    modalVisibleSchedule: false,
     lsWorkSheet: [],
     courseId: 0,
   };
@@ -96,50 +96,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     this.setState({
       modalVisible: !this.state.modalVisible,
     });
-  };
-
-  ModalCourse = () => {
-    this.setState({
-      modalVisibleCourse: !this.state.modalVisibleCourse,
-    });
-  };
-
-  ModalSchedule = () => {
-    this.setState({
-      modalVisibleSchedule: !this.state.modalVisibleSchedule,
-    });
-  };
-
-  async getCourse(
-    id: EntityDto,
-    code: any,
-    limitStudent: any,
-    currentStudent: any,
-    lessionTimes: any
-  ) {
-    const { course } = this.state;
-    const { courseStore } = this.props;
-    await courseStore.get(id);
-
-    const result = courseStore.editCourse;
-
-    const updateCourse = {
-      ...course,
-      code: code.code,
-      courseName: result.courseName,
-      courseFee: result.courseFee,
-      quatity: result.quantity,
-      limitStudent: limitStudent.limitStudent,
-      currentStudent: currentStudent.currentStudent,
-      lessionTimes: lessionTimes.lessionTimes,
-    };
-    this.setState({ course: updateCourse });
-    this.ModalCourse();
-  }
-
-  getSchedule = async (entityDto: EntityDto) => {
-    await this.setState({ classId: entityDto.id });
-    this.ModalSchedule();
   };
 
   async createOrUpdateModalOpen(entityDto: EntityDto) {
@@ -204,7 +160,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
 
   public render() {
     const { classes } = this.props.classStore;
-    const { classId } = this.state;
+    // const { classId } = this.state;
     const columns = [
       {
         title: L('Code'),
@@ -238,37 +194,37 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
       {
         title: L('Actions'),
         width: 150,
-        render: (text: string, item: any) => (
+        render: (_text: string, item: any) => (
           <div>
             <Dropdown
               trigger={['click']}
               overlay={
                 <Menu>
-                  <Menu.Item onClick={() => this.createOrUpdateModalOpen({ id: item.id })}>
+                  <Menu.Item key="1" onClick={() => this.createOrUpdateModalOpen({ id: item.id })}>
                     {L('Edit')}
                   </Menu.Item>
-                  <Menu.Item onClick={() => this.delete({ id: item.id })}>{L('Delete')}</Menu.Item>
-                  <Menu.Item
-                    onClick={() =>
-                      this.getCourse(
-                        { id: item.course.id },
-                        { code: item.code },
-                        { limitStudent: item.limitStudent },
-                        { currentStudent: item.currentStudent },
-                        { lessionTimes: item.lessionTimes }
-                      )
-                    }
-                  >
-                    {L('Course')}
+                  <Menu.Item key="2" onClick={() => this.delete({ id: item.id })}>
+                    {L('Delete')}
                   </Menu.Item>
                   <Menu.Item
-                    onClick={() =>
-                      this.getSchedule({
-                        id: item.id,
-                      })
-                    }
+                    key="3"
                   >
-                    {L('Schedule')}
+                    // Khi click tới Manager trên Action thì nó sẽ chuyển tới trang /classes/manager (giao diện quản lý của class)
+                    
+                    <Link
+                      to={{
+                        pathname: '/classes/manager',
+                        state: {
+                          courseId: item.course.id,
+                          code: item.code,
+                          limitStudent: item.limitStudent,
+                          currentStudent: item.currentStudent,
+                          lessionTimes: item.lessionTimes,
+                        },
+                      }}
+                    >
+                      {L('Manager')}
+                    </Link>
                   </Menu.Item>
                 </Menu>
               }
@@ -358,25 +314,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           roomStore={this.props.roomStore}
           selectedRoomId={this.state.selectedRoomId}
           onUpdateLsWorkSheet={this.handleUpdateLsWorkSheet}
-        />
-        <Course
-          visible={this.state.modalVisibleCourse}
-          onCancel={() => {
-            this.setState({
-              modalVisibleCourse: false,
-            });
-          }}
-          course={this.state.course}
-        />
-        <Schedule
-          visible={this.state.modalVisibleSchedule}
-          onCancel={() => {
-            this.setState({
-              modalVisibleSchedule: false,
-            });
-          }}
-          scheduleStore={this.props.scheduleStore}
-          classId={classId}
         />
       </Card>
     );
