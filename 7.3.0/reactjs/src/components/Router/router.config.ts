@@ -78,6 +78,14 @@ export const appRouters: any = [
     component: LoadableComponent(() => import('../../scenes/Tenants')),
   },
   {
+    path: '/classes/manager',
+    permission: 'Pages.Users',
+    title: 'Class Manager',
+    name: 'classManager',
+    showInMenu: false,
+    component: LoadableComponent(() => import('../../scenes/ManagerScreen')),
+  },
+  {
     path: '/classes',
     permission: 'Pages.Users',
     title: 'Classes',
