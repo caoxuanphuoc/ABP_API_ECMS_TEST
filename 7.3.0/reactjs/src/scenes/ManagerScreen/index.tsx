@@ -67,15 +67,16 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
 
   public render() {
     const { state } = this.props.location;
-    if (state && state.courseId) {
-      this.getCourse(
-        { id: state.courseId },
-        state.code,
-        state.limitStudent,
-        state.currentStudent,
-        state.lessionTimes
-      );
-    }
+     console.log(state)
+    // if (state && state.courseId.) {
+    //   this.getCourse(
+    //     { id: state.courseId },
+    //     state.code,
+    //     state.limitStudent,
+    //     state.currentStudent,
+    //     state.lessionTimes
+    //   );
+    // }
 
     const tabList = [
       {
