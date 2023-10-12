@@ -209,7 +209,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                   <Menu.Item
                     key="3"
                   >
-                    // Khi click tới Manager trên Action thì nó sẽ chuyển tới trang /classes/manager (giao diện quản lý của class)
+                    {/* // Khi click tới Manager trên Action thì nó sẽ chuyển tới trang /classes/manager (giao diện quản lý của class) */}
                     
                     <Link
                       to={{
