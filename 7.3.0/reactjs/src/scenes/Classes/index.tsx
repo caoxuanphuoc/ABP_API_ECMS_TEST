@@ -215,6 +215,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                       to={{
                         pathname: '/classes/manager',
                         state: {
+                          idClass: item.id,
                           courseId: item.course.id,
                           code: item.code,
                           limitStudent: item.limitStudent,

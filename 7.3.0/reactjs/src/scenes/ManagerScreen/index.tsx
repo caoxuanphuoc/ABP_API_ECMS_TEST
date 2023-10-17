@@ -8,7 +8,7 @@ import UserClassStore from '../../stores/userClassStore';
 import { CourseCreen } from '../Classes/components/Courses/courseScreen';
 import Stores from '../../stores/storeIdentifier';
 import CourseStore from '../../stores/courseStore';
-import { EntityDto } from '../../services/dto/entityDto';
+import ListMember from './components/ListMember';
 
 export interface IManagerScreenProps extends RouteComponentProps {
   userClassStore: UserClassStore;
@@ -19,6 +19,15 @@ export interface IManagerScreenProps extends RouteComponentProps {
 export interface IManagerScreenState {
   activeTabKey: string;
   course: CourseCreen;
+}
+
+interface StateType {
+  idClass: number;
+  courseId: number;
+  code: string;
+  limitStudent: number;
+  currentStudent: number;
+  lessionTimes: number;
 }
 
 @inject(Stores.UserClassStore, Stores.ScheduleStore, Stores.CourseStore)
@@ -38,7 +47,7 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
   };
 
   async getCourse(
-    id: EntityDto,
+    id: any,
     code: any,
     limitStudent: any,
     currentStudent: any,
@@ -66,8 +75,13 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
   }
 
   public render() {
+    console.log(this.props.location.state);
+    //const idClass =this.props.location.state.idClass;
+    // this.props.location.state.item.idClass;
     const { state } = this.props.location;
-    console.log(state);
+    const StateObject = state == null ? null : (state as StateType);
+    console.log(StateObject);
+    
     
     // if (state && state.courseId) {
     //   this.getCourse(
@@ -98,7 +112,10 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
       {
         key: 'LichHoc',
         tab: 'Lịch học',
-        content: 'Lịch học calendar',
+        content: <ListMember
+            userClassStore={this.props.userClassStore}
+            ClassId= {Number(StateObject?.idClass)}
+          />,
       },
     ];
 
@@ -117,8 +134,9 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
         {tabList.map(
           (tab) =>
             tab.key === this.state.activeTabKey && (
-              <React.Fragment key={tab.key}>{tab.content}</React.Fragment>
-            )
+              <React.Fragment key={tab.key}>{tab.content } </React.Fragment>
+              )
+          
         )}
       </Card>
     );

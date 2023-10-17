@@ -7,5 +7,6 @@ export interface GetAllUserClassOutput {
   offTimes: number;
   dateStart: Date;
   isActive: boolean;
+  roleMember: string;
   id: number;
 }
