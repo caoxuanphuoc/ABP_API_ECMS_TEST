@@ -19,5 +19,8 @@ namespace EMS.Socials.Posts.Dto
         [Required]
         public TypePost Type { get; set; }
         public string FileKey { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; } 
+
     }
 }

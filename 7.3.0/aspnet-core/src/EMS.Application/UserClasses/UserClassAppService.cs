@@ -70,6 +70,11 @@ namespace EMS.UserClasses
         public override async Task<UserClassDto> CreateAsync(CreateUserClassDto input)
         {
             CheckCreatePermission();
+            var query = Repository.GetAll().Where(x => x.UserId == input.UserId && x.ClassId == input.ClassId);
+            if( query.Count() > 0)
+            {
+                throw new UserFriendlyException(400, "User đã tồn tại");
+            }
             await CheckUserIsExists(input.UserId);
             await CheckClassIsExists(input.ClassId);
             var userClass = ObjectMapper.Map<UserClass>(input);
@@ -108,15 +113,25 @@ namespace EMS.UserClasses
         {
             var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.Class.Course, x => x.User.Teachers);
 
-            if (!input.Keyword.IsNullOrWhiteSpace())
+            if ( input.ClassId != 0)
+            {
+                query = query.Where(x => x.ClassId == input.ClassId);
+            }
+            if(input.IsActive != null)
+            {
+                    query = query.Where(x => x.IsActive == input.IsActive);
+            }
+
+                if (!input.Keyword.IsNullOrWhiteSpace())
             {
                 query = query.Where(x => x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower())
                                         && x.User.IsActive && !x.User.IsDeleted && x.IsActive == input.IsActive);
+
             }
             else
             {
-                query = query.Where(x => x.User.IsActive && !x.User.IsDeleted && x.IsActive == input.IsActive);
+                query = query.Where(x => x.User.IsActive && !x.User.IsDeleted );
             }
             return query;
         }

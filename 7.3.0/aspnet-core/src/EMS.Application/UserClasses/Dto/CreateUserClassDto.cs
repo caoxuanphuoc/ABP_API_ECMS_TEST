@@ -18,6 +18,9 @@ namespace EMS.UserClasses.Dto
         public DateTime DateStart { get; set; }
         [Required]
         public bool IsActive { get; set; }
+        [Required]
+        public TypeRole RoleMember { get; set; }
+
 
     }
 }

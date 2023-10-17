@@ -15,5 +15,7 @@ namespace EMS.UserClasses.Dto
         public int OffTimes { get; set; }
         public DateTime DateStart { get; set; }
         public bool IsActive { get; set; }
+        public string RoleMember { get; set; }
+
     }
 }
