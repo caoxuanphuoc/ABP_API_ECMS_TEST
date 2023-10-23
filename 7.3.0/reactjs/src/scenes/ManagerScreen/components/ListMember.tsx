@@ -63,7 +63,7 @@ class ListMember extends React.Component<IListMemberProps, InfoClassState>{
                         <List.Item.Meta
                            avatar={<Avatar src={`https://xsgames.co/randomusers/avatar.php?g=pixel&key=${index}`} />}
                             title={<a href="https://ant.design">{item.name}</a>}
-                            description={ "Đã tham gia lớp: " + item.class}
+                            description={ <span style={{color: "black"}}> Đã tham gia lớp: {item.class} </span>}
                         />
                     </List.Item>
                 )}
@@ -78,7 +78,7 @@ class ListMember extends React.Component<IListMemberProps, InfoClassState>{
                         <List.Item.Meta
                            avatar={<Avatar src={`https://xsgames.co/randomusers/avatar.php?g=pixel&key=${index}`} />}
                             title={<a href="https://ant.design">{item.name}</a>}
-                            description={ "Đã tham gia lớp: " + item.class}
+                            description={ <span style={{color: "black"}}> Đã tham gia lớp: {item.class} </span>}
                         />
                     </List.Item>
                 )}
