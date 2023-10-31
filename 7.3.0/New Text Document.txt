@@ -1,3 +1,7 @@
 commit 1
 
+<<<<<<< HEAD
 thêm lệnh 
+=======
+Commit 2
+>>>>>>> 40b5323cdcfa547dd6530881a46f67e67e80b830
