@@ -1,4 +1,5 @@
-﻿using Abp.Application.Services;
+﻿using Abp;
+using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Authorization;
 using Abp.Domain.Entities;
@@ -16,11 +17,19 @@ using EMS.Authorization.UserClasses;
 using EMS.Authorization.Users;
 using EMS.Roles.Dto;
 using EMS.Users.Dto;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using Google.Apis.Upload;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EMS.Users
@@ -263,6 +272,79 @@ namespace EMS.Users
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Bạn có thể thay đổi kiểu đầu vào của driveUrl hoặc bạn có thể yêu cầu người dùng chỉ
+        /// cần nhập Id của folder là 123qwe. Nếu làm như thế thì không cần hàm GetFolderId.
+        /// Thay vào đó là gán trực tiếp folderId trong hàm UploadFile thành driveUrl
+        /// </summary>
+        /// <param name="driveUrl">drive.google.com/drive/folders/123qwe</param>
+        /// <returns></returns>
+        /// <exception cref="UserFriendlyException"></exception>
+        protected string GetFolderId(string driveUrl)
+        {
+            // Get the location of "folders/"
+            int index = driveUrl.IndexOf("folders/");
+            // Check if there are "folders/" in the URL
+            if (index == -1)
+            {
+                throw new UserFriendlyException("Drive Url not match (example: folders/abc123)");
+            }
+            else
+            {
+                return Regex.Match(driveUrl, @"folders/([a-zA-Z0-9_-]+)").Groups[1].Value;
+            }
+        }
+
+        public async Task<string> UploadFileToDrive(IFormFile file, string driveUrl)
+        {
+            if (file == null)
+                throw new UserFriendlyException("Please select file to upload");
+
+            if (driveUrl == null)
+                throw new UserFriendlyException("Please input drive url");
+
+            var folderId = GetFolderId(driveUrl).Trim();
+            var credentialPath = "credentials.json";
+
+            // Load the Service account credentials and define the scope of its access.
+            var credential = GoogleCredential.FromFile(credentialPath)
+                                .CreateScoped(DriveService.ScopeConstants.Drive);
+
+            // Create the Drive service
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential
+            });
+            var fileName = Path.GetFileName(file.FileName);
+
+            // Upload file Metadata
+            var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+            {
+                Name = fileName,
+                Parents = new List<string>() { folderId }
+            };
+
+            string uploadFileId;
+            // Create a new file on GoogleDrive
+            await using (var fsSource = file.OpenReadStream())
+            {
+                // Create a new file, with metadata and stream.
+                var request = service.Files.Create(fileMetadata, fsSource, "");
+                request.Fields = "*";
+                var result = await request.UploadAsync(CancellationToken.None);
+                if (result.Status == UploadStatus.Failed)
+                {
+                    throw new UserFriendlyException($"Not found Drive Foler {folderId}");
+                }
+
+                uploadFileId = request.ResponseBody?.Id;
+            };
+
+            // Generate a URL to the uploaded files
+            var fileUrl = $"https://drive.google.com/file/d/{uploadFileId}/view";
+            return fileUrl;
         }
     }
 }
