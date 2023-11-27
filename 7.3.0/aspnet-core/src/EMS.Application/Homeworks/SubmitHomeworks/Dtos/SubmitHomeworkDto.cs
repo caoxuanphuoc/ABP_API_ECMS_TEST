@@ -1,5 +1,6 @@
 ﻿using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
+using System;
 
 namespace EMS.Homeworks.SubmitHomeworks.Dtos
 {
@@ -12,5 +13,7 @@ namespace EMS.Homeworks.SubmitHomeworks.Dtos
         public string Content { get; set; }
         public string FileKey { get; set; }
         public bool Islate { get; set; }
+        public DateTime TimeToSubmit { get; set; }
+        public long FromUserId { get; set; }
     }
 }

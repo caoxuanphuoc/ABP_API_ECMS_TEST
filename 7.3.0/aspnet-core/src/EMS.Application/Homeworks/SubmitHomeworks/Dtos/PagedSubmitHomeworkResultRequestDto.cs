@@ -4,6 +4,7 @@ namespace EMS.Homeworks.SubmitHomeworks.Dtos
 {
     public class PagedSubmitHomeworkResultRequestDto : PagedAndSortedResultRequestDto
     {
-        public string Keywoed { get; set; }
+        public string Keyword { get; set; }
+        public long FromUserId { get; set; }
     }
 }
