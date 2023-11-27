@@ -1,7 +1,6 @@
 ﻿using Abp.AutoMapper;
-using EMS.Authorization.Classes;
-using EMS.Homeworks;
 using EMS.Social.Posts;
+using EMS.Users.Dto;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,9 +17,10 @@ namespace EMS.Socials.Posts.Dto
         public string ContentPost { get; set; }
         [Required]
         public TypePost Type { get; set; }
-        public string FileKey { get; set; }
         public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; } 
+        public DateTime EndTime { get; set; }
+        [Required]
+        public FileDto fileDto { get; set; }
 
     }
 }

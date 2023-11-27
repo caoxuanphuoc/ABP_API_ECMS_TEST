@@ -1,9 +1,7 @@
 ﻿using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
-using EMS.Authorization.Classes;
-using EMS.Authorization.Schedules;
-using EMS.Homeworks;
 using EMS.Social.Posts;
+using System;
 
 namespace EMS.Socials.Posts.Dto
 {
@@ -15,5 +13,7 @@ namespace EMS.Socials.Posts.Dto
         public string ContentPost { get; set; }
         public string Type { get; set; }
         public string FileKey { get; set; }
+        public DateTime TimeToPost { get; set; }
+        public long FromUserId { get; set; }
     }
 }
