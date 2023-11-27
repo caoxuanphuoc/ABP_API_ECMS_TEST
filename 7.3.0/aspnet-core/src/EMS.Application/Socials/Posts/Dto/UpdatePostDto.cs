@@ -1,7 +1,7 @@
 ﻿using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
-using EMS.Authorization.Schedules;
 using EMS.Social.Posts;
+using EMS.Users.Dto;
 using System.ComponentModel.DataAnnotations;
 
 namespace EMS.Socials.Posts.Dto
@@ -15,8 +15,6 @@ namespace EMS.Socials.Posts.Dto
         public string Title { get; set; }
         [Required]
         public string ContentPost { get; set; }
-        [Required]
-        public TypePost Type { get; set; }
-        public string FileKey { get; set; }
+        public FileDto fileDto { get; set; }
     }
 }
