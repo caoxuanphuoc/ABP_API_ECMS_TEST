@@ -11,6 +11,7 @@ import ClassStore from '../../stores/classStore';
 import Stores from '../../stores/storeIdentifier';
 import './index.css';
 import CreateQr from './components/createQr';
+import { Shift, shiftNames } from '../../services/schedule/dto/shift';
 
 export interface IScheduleProps {
   scheduleStore: ScheduleStore;
@@ -141,10 +142,11 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
       );
 
       if (matchingSchedule) {
+        const shiftValue: Shift = Shift[matchingSchedule.shift as unknown as keyof typeof Shift];
         listData = [
           {
             type: 'success',
-            content: `${matchingSchedule.shift} - 
+            content: `${shiftNames[shiftValue]} - 
                       ${matchingSchedule.class.code} - 
                       ${matchingSchedule.class.course.courseName}`,
             id: matchingSchedule.id
