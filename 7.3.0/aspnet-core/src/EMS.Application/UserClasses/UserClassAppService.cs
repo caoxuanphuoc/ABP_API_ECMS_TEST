@@ -71,7 +71,7 @@ namespace EMS.UserClasses
         {
             CheckCreatePermission();
             var query = Repository.GetAll().Where(x => x.UserId == input.UserId && x.ClassId == input.ClassId);
-            if( query.Count() > 0)
+            if (query.Count() > 0)
             {
                 throw new UserFriendlyException(400, "User đã tồn tại");
             }
@@ -113,16 +113,16 @@ namespace EMS.UserClasses
         {
             var query = Repository.GetAllIncluding(x => x.User, x => x.User.Roles, x => x.Class, x => x.Class.Course, x => x.User.Teachers);
 
-            if ( input.ClassId != 0)
+            if (input.ClassId != 0)
             {
                 query = query.Where(x => x.ClassId == input.ClassId);
             }
-            if(input.IsActive != null)
+            if (input.IsActive != null)
             {
-                    query = query.Where(x => x.IsActive == input.IsActive);
+                query = query.Where(x => x.IsActive == input.IsActive);
             }
 
-                if (!input.Keyword.IsNullOrWhiteSpace())
+            if (!input.Keyword.IsNullOrWhiteSpace())
             {
                 query = query.Where(x => x.User.Name.ToLower().Contains(input.Keyword.ToLower()) ||
                                         x.User.EmailAddress.ToLower().Contains(input.Keyword.ToLower())
@@ -131,7 +131,7 @@ namespace EMS.UserClasses
             }
             else
             {
-                query = query.Where(x => x.User.IsActive && !x.User.IsDeleted );
+                query = query.Where(x => x.User.IsActive && !x.User.IsDeleted);
             }
             return query;
         }

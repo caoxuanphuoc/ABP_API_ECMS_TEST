@@ -264,6 +264,11 @@ namespace EMS.Users
 
             return true;
         }
+
+        public async Task<string> UploadFileToDrive(FileDto fileDto)
+        {
+            return "";
+        }
     }
 }
 

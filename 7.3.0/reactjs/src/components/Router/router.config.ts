@@ -9,6 +9,7 @@ import {
   ReadOutlined,
   UsergroupAddOutlined,
   ProfileOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import LoadableComponent from './../Loadable/index';
 
@@ -93,6 +94,15 @@ export const appRouters: any = [
     icon: ReadOutlined,
     showInMenu: true,
     component: LoadableComponent(() => import('../../scenes/Classes')),
+  },
+  {
+    path: '/schedule',
+    Permissions: 'Pages.Users',
+    title: 'Schedules',
+    name: 'schedule',
+    icon: CalendarOutlined,
+    showInMenu: true,
+    component: LoadableComponent(() => import('../../scenes/Schedules')),
   },
   {
     path: '/userClasses',

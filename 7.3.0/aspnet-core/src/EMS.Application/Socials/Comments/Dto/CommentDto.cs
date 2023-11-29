@@ -1,7 +1,6 @@
 ﻿using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
 using EMS.Social.Comments;
-using EMS.Social.Posts;
 
 namespace EMS.Socials.Comments.Dto
 {
@@ -11,5 +10,6 @@ namespace EMS.Socials.Comments.Dto
         public long PostId { get; set; }
         public bool IsPrivate { get; set; }
         public string ContentComment { get; set; }
+        public long FromUserId { get; set; }
     }
 }
