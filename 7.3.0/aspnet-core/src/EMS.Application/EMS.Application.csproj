@@ -12,6 +12,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.64.0.3155" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\EMS.Core\EMS.Core.csproj" />
     <ProjectReference Include="..\EMS.EntityFrameworkCore\EMS.EntityFrameworkCore.csproj" />
   </ItemGroup>

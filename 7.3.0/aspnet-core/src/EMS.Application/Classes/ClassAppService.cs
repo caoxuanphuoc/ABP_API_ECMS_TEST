@@ -74,7 +74,7 @@ namespace EMS.Classes
         protected async Task<Room> CheckRoomIsExists(int roomId)
         {
             var room = await _roomRepository.GetAsync(roomId);
-            if (room == null || (room != null & room.IsDeleted))
+            if (room == null || (room != null && room.IsDeleted))
             {
                 throw new EntityNotFoundException("Not found Room");
             }
