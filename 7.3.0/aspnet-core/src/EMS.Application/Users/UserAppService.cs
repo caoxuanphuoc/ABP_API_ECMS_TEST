@@ -21,8 +21,8 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Upload;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -274,8 +274,6 @@ namespace EMS.Users
             return true;
         }
 
-        public async Task<string> UploadFileToDrive(FileDto fileDto)
-        {
         /// <summary>
         /// Bạn có thể thay đổi kiểu đầu vào của driveUrl hoặc bạn có thể yêu cầu người dùng chỉ
         /// cần nhập Id của folder là 123qwe. Nếu làm như thế thì không cần hàm GetFolderId.
@@ -299,15 +297,15 @@ namespace EMS.Users
             }
         }
 
-        public async Task<string> UploadFileToDrive(IFormFile file, string driveUrl)
+        public async Task<string> UploadFileToDrive([FromForm] FileDto fileDto)
         {
-            if (file == null)
+            if (fileDto.file == null)
                 throw new UserFriendlyException("Please select file to upload");
 
-            if (driveUrl == null)
+            if (fileDto.DriveUrl == null)
                 throw new UserFriendlyException("Please input drive url");
 
-            var folderId = GetFolderId(driveUrl).Trim();
+            var folderId = GetFolderId(fileDto.DriveUrl).Trim();
             var credentialPath = "credentials.json";
 
             // Load the Service account credentials and define the scope of its access.
@@ -319,7 +317,7 @@ namespace EMS.Users
             {
                 HttpClientInitializer = credential
             });
-            var fileName = Path.GetFileName(file.FileName);
+            var fileName = Path.GetFileName(fileDto.file.FileName);
 
             // Upload file Metadata
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
@@ -330,7 +328,7 @@ namespace EMS.Users
 
             string uploadFileId;
             // Create a new file on GoogleDrive
-            await using (var fsSource = file.OpenReadStream())
+            await using (var fsSource = fileDto.file.OpenReadStream())
             {
                 // Create a new file, with metadata and stream.
                 var request = service.Files.Create(fileMetadata, fsSource, "");
