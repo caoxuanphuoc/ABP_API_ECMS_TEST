@@ -5,7 +5,7 @@ namespace EMS.UserClasses.Dto
     public class PagedUserClassResultRequestDto : PagedAndSortedResultRequestDto
     {
         public string Keyword { get; set; }
-        public bool IsActive { get; set; }
-        public long ClassId { get; set; }
+        public bool IsActive { get; set; } = true;
+        public long ClassId { get; set; } 
     }
 }

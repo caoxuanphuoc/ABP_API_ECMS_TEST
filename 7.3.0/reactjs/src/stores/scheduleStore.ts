@@ -12,6 +12,8 @@ class ScheduleStore {
 
   @observable editSchedule!: CreateOrUpdateScheduleInput;
 
+  @observable hashString!: string;
+
   @action
   async create(createScheduleInput: CreateOrUpdateScheduleInput) {
     let result = await scheduleService.create(createScheduleInput);
@@ -82,6 +84,12 @@ class ScheduleStore {
   async getAll(pagedFilterAndSortedRequest: PagedScheduleResultRequestDto) {
     let result = await scheduleService.getAll(pagedFilterAndSortedRequest);
     this.schedules = result;
+  }
+
+  @action
+  async hashSchedule(scheduleId: number) {
+    let result = await scheduleService.hashSchedule(scheduleId);
+    this.hashString = result;
   }
 }
 

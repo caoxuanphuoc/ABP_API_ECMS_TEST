@@ -209,12 +209,13 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                   <Menu.Item
                     key="3"
                   >
-                    // Khi click tới Manager trên Action thì nó sẽ chuyển tới trang /classes/manager (giao diện quản lý của class)
+                    {/* // Khi click tới Manager trên Action thì nó sẽ chuyển tới trang /classes/manager (giao diện quản lý của class) */}
                     
                     <Link
                       to={{
                         pathname: '/classes/manager',
                         state: {
+                          idClass: item.id,
                           courseId: item.course.id,
                           code: item.code,
                           limitStudent: item.limitStudent,

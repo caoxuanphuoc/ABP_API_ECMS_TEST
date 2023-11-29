@@ -15,6 +15,7 @@ namespace EMS.Authorization.UserClasses
         public bool IsActive { get; set; }
         public int OffTimes { get; set; }
         public DateTime DateStart { get; set; }
+        public TypeRole RoleMember { get; set; }
         [ForeignKey("User")]
         public long UserId { get; set; }
         public User User { get; set; }

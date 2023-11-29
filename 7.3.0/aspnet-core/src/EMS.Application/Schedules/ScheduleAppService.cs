@@ -10,7 +10,10 @@ using EMS.Authorization.Rooms;
 using EMS.Authorization.Schedules;
 using EMS.Schedules.Dto;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EMS.Schedules
@@ -33,7 +36,7 @@ namespace EMS.Schedules
         // Sorting by User
         protected override IQueryable<Schedule> ApplySorting(IQueryable<Schedule> query, PagedScheduleResultRequestDto input)
         {
-            return query.OrderBy(x => x.ClassId).ThenBy(r => r.Date);
+            return query.OrderBy(x => x.ClassId).ThenBy(r => r.Date).ThenBy(r => r.Shift);
         }
 
         protected override IQueryable<Schedule> CreateFilteredQuery(PagedScheduleResultRequestDto input)
@@ -42,12 +45,15 @@ namespace EMS.Schedules
             if (!input.Keyword.IsNullOrWhiteSpace())
             {
                 query = query.Where(x => x.Class.Code.ToLower().Contains(input.Keyword.ToLower()) ||
-                                    x.Room.RoomName.ToLower().Contains(input.Keyword.ToLower()) &&
-                                    x.ClassId == input.ClassId);
+                                        x.Room.RoomName.ToLower().Contains(input.Keyword.ToLower()));
             }
-            else
+
+            if (input.ClassId != 0)
             {
-                query = query.Where(x => x.ClassId == input.ClassId);
+                query = query.Where(x => (input.Keyword.IsNullOrWhiteSpace() ||
+                                          (x.Class.Code.ToLower().Contains(input.Keyword.ToLower()) ||
+                                           x.Room.RoomName.ToLower().Contains(input.Keyword.ToLower()))) &&
+                                           x.ClassId == input.ClassId);
             }
             return query;
         }
@@ -95,6 +101,18 @@ namespace EMS.Schedules
             ObjectMapper.Map(schedule, input);
             await base.UpdateAsync(input);
             return await GetAsync(new EntityDto<long> { Id = input.Id });
+        }
+
+        public async Task<string> HashSchedule(long id)
+        {
+            var schedule = await Repository.GetAsync(id);
+            var concatenatedIds = $"{schedule.Id}-{schedule.ClassId}";
+
+            string hashedString;
+            using var sha256 = SHA256.Create();
+            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(concatenatedIds));
+            hashedString = BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+            return hashedString;
         }
     }
 }

@@ -274,6 +274,8 @@ namespace EMS.Users
             return true;
         }
 
+        public async Task<string> UploadFileToDrive(FileDto fileDto)
+        {
         /// <summary>
         /// Bạn có thể thay đổi kiểu đầu vào của driveUrl hoặc bạn có thể yêu cầu người dùng chỉ
         /// cần nhập Id của folder là 123qwe. Nếu làm như thế thì không cần hàm GetFolderId.
