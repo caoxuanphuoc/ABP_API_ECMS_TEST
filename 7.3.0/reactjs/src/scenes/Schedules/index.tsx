@@ -159,16 +159,19 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
 
     const dateCellRender = (value: Moment) => {
       const listData = getListData(value);
+      const hasEvents = listData.length > 0
       return (
-        <ul className="events">
-          {listData.map((item) => (
-            <li key={item.content} onClick={() => this.handleQrCode(item.id)}>
-              <Tooltip title={item.content}>
-                <Badge status={item.type as BadgeProps['status']} text={item.content} />
-              </Tooltip>
-            </li>
-          ))}
-        </ul>
+        <div className={`date-cell ${hasEvents ? 'important-date-cell' : ''}`}>
+          <ul className="events">
+            {listData.map((item) => (
+              <li key={item.id} onClick={() => this.handleQrCode(item.id)}>
+                <Tooltip title={item.content}>
+                  <Badge status={item.type as BadgeProps['status']} text={item.content} />
+                </Tooltip>
+              </li>
+            ))}
+          </ul>
+        </div>
       );
     };
 
@@ -197,7 +200,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
         <Row style={{ marginTop: 20 }}>
           <Calendar dateCellRender={dateCellRender} />
         </Row>
-        <CreateQr 
+        <CreateQr
           hashSchedule={this.state.hashSchedule} 
           visible={this.state.modalVisible}
           onCancel={() => {
