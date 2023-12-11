@@ -113,7 +113,11 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
   };
 
   handleChange = (value: any) => {
-    this.setState({ selectedClassId: value });
+    const selectedClassId = value === "Select Class" ? 0 : value;
+    this.setState({ selectedClassId }, async () => {
+      // Call getAll after the state is updated
+      await this.getAll();
+    });
   };
 
   handleQrCode = (id: number) => {
@@ -189,12 +193,15 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
             xxl={{ span: 4, offset: 0 }}
           >
             <Select
-              options={classes.map((classroom) => ({
-                key: classroom.id,
-                value: classroom.id,
-                label: classroom.code,
-              }))}
-              defaultValue="Select Class"
+              options={[
+                { key: 0, value: 0, label: "Select Class" },
+                ...classes.map((classroom) => ({
+                  key: classroom.id,
+                  value: classroom.id,
+                  label: classroom.code,
+                })),
+              ]}
+              defaultValue={0} // Set the initial default value to 0
               onChange={this.handleChange}
             />
           </Col>
