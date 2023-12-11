@@ -137,23 +137,23 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     const getListData = (value: Moment) => {
       let listData;
 
-      const matchingSchedule = schedules.find((schedule) =>
+      const matchingSchedules = schedules.filter((schedule) =>
         moment(schedule.date.toString().split('T')[0]).isSame(value, 'day')
       );
 
-      if (matchingSchedule) {
-        const shiftValue: Shift = Shift[matchingSchedule.shift as unknown as keyof typeof Shift];
-        listData = [
-          {
+      if (matchingSchedules.length > 0) {
+        listData = matchingSchedules.map((matchingSchedule) => {
+          const shiftValue: Shift = Shift[matchingSchedule.shift as unknown as keyof typeof Shift];
+          return {
             type: 'success',
             content: `${shiftNames[shiftValue]} - 
                       ${matchingSchedule.class.code} - 
                       ${matchingSchedule.class.course.courseName}`,
             id: matchingSchedule.id
-          },
-        ];
+          };
+        });
       }
-
+    
       return listData || [];
     };
 
@@ -161,17 +161,19 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
       const listData = getListData(value);
       const hasEvents = listData.length > 0
       return (
-        <div className={`date-cell ${hasEvents ? 'important-date-cell' : ''}`}>
-          <ul className="events">
-            {listData.map((item) => (
-              <li key={item.id} onClick={() => this.handleQrCode(item.id)}>
-                <Tooltip title={item.content}>
-                  <Badge status={item.type as BadgeProps['status']} text={item.content} />
-                </Tooltip>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul className="events">
+          {listData.map((item) => (
+            <li key={item.id} onClick={() => this.handleQrCode(item.id)}>
+              <Tooltip title={item.content}>
+                <Badge
+                  className={`date-cell ${hasEvents ? 'important-date-cell' : ''}`} 
+                  status={item.type as BadgeProps['status']}
+                  text={item.content}
+                />
+              </Tooltip>
+            </li>
+          ))}
+        </ul>
       );
     };
 
