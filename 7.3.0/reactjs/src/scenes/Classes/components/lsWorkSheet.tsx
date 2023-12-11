@@ -76,14 +76,14 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
       <Card
         bordered
         title="List WorkSheets"
-        extra={
+        extra={(
           <Button
             type="primary"
             shape="circle"
             icon={<PlusOutlined />}
             onClick={this.handleAddField}
           />
-        }
+        )}
       >
         {fields.map((field) => (
           <Form.Item key={field.key} name={['lsWorkSheet']}>
@@ -93,12 +93,11 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
                   <Select
                     value={field.dayOfWeek}
                     onChange={(value) =>
-                      this.handleDayOfWeekChange(field.key, value as DayOfTheWeek)
-                    }
+                      this.handleDayOfWeekChange(field.key, value as DayOfTheWeek)}
                   >
-                    {Object.values(DayOfTheWeek).map((day) => (
-                      <Select.Option key={day} value={day}>
-                        {day}
+                    {Object.entries(DayOfTheWeek).map(([key, value]) => (
+                      <Select.Option key={key} value={value}>
+                        {value}
                       </Select.Option>
                     ))}
                   </Select>
@@ -107,8 +106,8 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
               <Col span={11}>
                 <Form.Item label={L('ShiftTime')}>
                   <Select
-                    value={field.shiftTime}
-                    onChange={(value) => this.handleShiftChange(field.key, value as Shift)}
+                    value={field.shiftTime.toString()}
+                    onChange={(value) => this.handleShiftChange(field.key, value as unknown as Shift)}
                   >
                     {Object.entries(shiftNames).map(([shift, shiftName]) => (
                       <Select.Option key={shift} value={shift}>
