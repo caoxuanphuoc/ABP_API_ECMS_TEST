@@ -1,10 +1,10 @@
 enum Shift {
-    Tiet_1_2 = 1,
-    Tiet_3_4 = 2,
-    Tiet_5_6 = 3,
-    Tiet_7_8 = 4,
-    Tiet_9_10 = 5,
-    Tiet_11_12 = 6,
+    Tiet_1_2,
+    Tiet_3_4,
+    Tiet_5_6,
+    Tiet_7_8,
+    Tiet_9_10,
+    Tiet_11_12,
   }
   
   const shiftNames: { [key in Shift]: string } = {

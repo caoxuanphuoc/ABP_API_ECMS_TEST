@@ -1,4 +1,4 @@
-import DayOfTheWeek from './dateOfTheWeek';
+import { DayOfTheWeek } from './dateOfTheWeek';
 import { Shift } from './shift';
 
 export interface UpdateScheduleInput {
