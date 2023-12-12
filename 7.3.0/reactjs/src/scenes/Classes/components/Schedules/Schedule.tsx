@@ -52,6 +52,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
       skipCount: this.state.skipCount,
       keyword: this.state.filter,
       classId: this.props.classId,
+      courseId: 0,
     });
   }
 

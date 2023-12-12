@@ -108,9 +108,9 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
         key: 'MoiNguoi',
         tab: 'Mọi người',
         content: <ListMember
-                  userClassStore={this.props.userClassStore}
-                  ClassId= {Number(StateObject?.idClass)}
-                />,
+          userClassStore={this.props.userClassStore}
+          ClassId={Number(StateObject?.idClass)}
+        />,
       },
       {
         key: 'LichHoc',

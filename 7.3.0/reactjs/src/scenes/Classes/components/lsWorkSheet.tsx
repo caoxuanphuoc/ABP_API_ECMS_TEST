@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Card, Col, Form, Row, Select } from 'antd';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import { WorkShiftDto } from '../../../services/schedule/dto/workShiftDto';
-import DayOfTheWeek from '../../../services/schedule/dto/dateOfTheWeek';
+import {DayOfWeek, DayOfTheWeek} from '../../../services/schedule/dto/dateOfTheWeek';
 import { Shift, shiftNames } from '../../../services/schedule/dto/shift';
 import { L } from '../../../lib/abpUtility';
 
@@ -11,13 +11,13 @@ interface DynamicFieldSetProps {
 }
 
 interface DynamicFieldSetState {
-  fields: { key: string; dayOfWeek: DayOfTheWeek; shiftTime: Shift }[];
+  fields: { key: string; dateOfWeek: DayOfTheWeek; shiftTime: Shift }[];
 }
 
 class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicFieldSetState> {
   constructor(props: DynamicFieldSetProps) {
     super(props);
-    const fields = [{ key: '', dayOfWeek: DayOfTheWeek.Monday, shiftTime: Shift.Tiet_1_2 }];
+    const fields = [{ key: '', dateOfWeek: DayOfTheWeek.Monday, shiftTime: Shift.Tiet_1_2 }];
     this.state = {
       fields,
     };
@@ -29,7 +29,7 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
     const newKey = Math.random().toString(36).substring(2);
     const newFields = [
       ...fields,
-      { key: newKey, dayOfWeek: DayOfTheWeek.Monday, shiftTime: Shift.Tiet_1_2 },
+      { key: newKey, dateOfWeek: DayOfTheWeek.Monday, shiftTime: Shift.Tiet_1_2 },
     ];
     this.setState({ fields: newFields }, this.updateFormattedLsWorkSheet);
   };
@@ -40,8 +40,8 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
     this.setState({ fields: newFields }, this.updateFormattedLsWorkSheet);
   };
 
-  handleDayOfWeekChange = (key: string, dayOfWeek: DayOfTheWeek) => {
-    this.updateField(key, { dayOfWeek });
+  handleDayOfWeekChange = (key: string, dateOfWeek: DayOfTheWeek) => {
+    this.updateField(key, { dateOfWeek });
   };
 
   handleShiftChange = (key: string, shiftTime: Shift) => {
@@ -50,7 +50,7 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
 
   updateField = (
     key: string,
-    updatedValues: Partial<{ dayOfWeek: DayOfTheWeek; shiftTime: Shift }>
+    updatedValues: Partial<{ dateOfWeek: DayOfTheWeek; shiftTime: Shift }>
   ) => {
     const { fields } = this.state;
     const newFields = fields.map((field) =>
@@ -62,8 +62,8 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
   updateFormattedLsWorkSheet = () => {
     const { fields } = this.state;
     const { onUpdateLsWorkSheet } = this.props;
-    const formattedListWorkSheets = fields.map(({ dayOfWeek, shiftTime }) => ({
-      dayOfWeek,
+    const formattedListWorkSheets = fields.map(({ dateOfWeek, shiftTime }) => ({
+      dateOfWeek,
       shiftTime,
     }));
     onUpdateLsWorkSheet(formattedListWorkSheets);
@@ -91,13 +91,13 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
               <Col span={11}>
                 <Form.Item label={L('DateOfWeek')}>
                   <Select
-                    value={field.dayOfWeek}
+                    value={field.dateOfWeek.toString()}
                     onChange={(value) =>
-                      this.handleDayOfWeekChange(field.key, value as DayOfTheWeek)}
+                      this.handleDayOfWeekChange(field.key, value as unknown as DayOfTheWeek)}
                   >
-                    {Object.entries(DayOfTheWeek).map(([key, value]) => (
-                      <Select.Option key={key} value={value}>
-                        {value}
+                    {Object.entries(DayOfWeek).map(([day, dayOfWeek]) => (
+                      <Select.Option key={day} value={day}>
+                        {dayOfWeek}
                       </Select.Option>
                     ))}
                   </Select>
@@ -107,7 +107,8 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
                 <Form.Item label={L('ShiftTime')}>
                   <Select
                     value={field.shiftTime.toString()}
-                    onChange={(value) => this.handleShiftChange(field.key, value as unknown as Shift)}
+                    onChange={(value) =>
+                      this.handleShiftChange(field.key, value as unknown as Shift)}
                   >
                     {Object.entries(shiftNames).map(([shift, shiftName]) => (
                       <Select.Option key={shift} value={shift}>

@@ -40,12 +40,7 @@ export interface IClassState {
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(
-  Stores.ClassStore,
-  Stores.CourseStore,
-  Stores.ScheduleStore,
-  Stores.RoomStore,
-)
+@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore, Stores.RoomStore)
 @observer
 class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();
@@ -108,6 +103,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
         skipCount: 0,
         keyword: '',
         classId: entityDto.id,
+        courseId: 0,
       });
     }
     this.setState({
@@ -141,7 +137,10 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
       if (this.state.classId === 0) {
         await this.props.classStore.create(updateValues);
       } else {
-        await this.props.classStore.update({ ...values, id: this.state.classId });
+        await this.props.classStore.update({
+          ...values,
+          id: this.state.classId,
+        });
       }
 
       await this.getAll();
@@ -198,7 +197,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           <div>
             <Dropdown
               trigger={['click']}
-              overlay={
+              overlay={(
                 <Menu>
                   <Menu.Item key="1" onClick={() => this.createOrUpdateModalOpen({ id: item.id })}>
                     {L('Edit')}
@@ -206,11 +205,9 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                   <Menu.Item key="2" onClick={() => this.delete({ id: item.id })}>
                     {L('Delete')}
                   </Menu.Item>
-                  <Menu.Item
-                    key="3"
-                  >
+                  <Menu.Item key="3">
                     {/* // Khi click tới Manager trên Action thì nó sẽ chuyển tới trang /classes/manager (giao diện quản lý của class) */}
-                    
+
                     <Link
                       to={{
                         pathname: '/classes/manager',
@@ -228,7 +225,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
                     </Link>
                   </Menu.Item>
                 </Menu>
-              }
+              )}
               placement="bottomLeft"
             >
               <Button type="primary" icon={<SettingOutlined />}>

@@ -2,6 +2,7 @@ import { FormInstance } from 'antd/lib/form';
 import React from 'react';
 import { Modal, Form, Select, DatePicker, Input, Checkbox, Row, Col } from 'antd';
 import moment from 'moment';
+import { DatePickerProps } from 'antd/lib/date-picker';
 import CourseStore from '../../../stores/courseStore';
 import { L } from '../../../lib/abpUtility';
 import rules from './createOrUpdateClass.validateion';
@@ -96,6 +97,10 @@ class CreateOrUpdateClass extends React.Component<
     return Promise.resolve();
   };
 
+  onChange: DatePickerProps['onChange'] = (date, dateString) => {
+    console.log(dateString);
+  };
+
   render() {
     const formItemLayout = {
       labelCol: {
@@ -147,8 +152,8 @@ class CreateOrUpdateClass extends React.Component<
       selectedRoomId,
       onUpdateLsWorkSheet,
     } = this.props;
-    const courses = courseStore.courses === undefined ? [] : courseStore.courses.items;
-    const rooms = roomStore.rooms === undefined ? [] : roomStore.rooms.items;
+    const courses = courseStore.courses?.items || [];
+    const rooms = roomStore.rooms?.items || [];
     const { type } = this.state;
     return (
       <Modal
@@ -254,7 +259,7 @@ class CreateOrUpdateClass extends React.Component<
                 ]}
                 valuePropName={type}
               >
-                <DatePicker />
+                <DatePicker onChange={this.onChange} />
               </Form.Item>
             </Col>
             <Col span={12}>
