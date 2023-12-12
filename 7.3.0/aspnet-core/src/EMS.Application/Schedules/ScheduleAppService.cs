@@ -55,6 +55,11 @@ namespace EMS.Schedules
                                            x.Room.RoomName.ToLower().Contains(input.Keyword.ToLower()))) &&
                                            x.ClassId == input.ClassId);
             }
+
+            if (input.CourseId != 0)
+            {
+                query = query.Where(x => x.Class.CourseId == input.CourseId);
+            }
             return query;
         }
 
