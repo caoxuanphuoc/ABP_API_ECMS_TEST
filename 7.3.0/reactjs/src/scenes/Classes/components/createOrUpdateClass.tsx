@@ -1,16 +1,14 @@
 import { FormInstance } from 'antd/lib/form';
 import React from 'react';
-import { Modal, Form, Select, DatePicker, Input, Checkbox, Row, Col } from 'antd';
-import moment from 'moment';
-import { DatePickerProps } from 'antd/lib/date-picker';
+import { Modal, Form, Select, Input, Checkbox, Row, Col, Tabs } from 'antd';
 import CourseStore from '../../../stores/courseStore';
 import { L } from '../../../lib/abpUtility';
 import rules from './createOrUpdateClass.validateion';
 import RoomStore from '../../../stores/roomStore';
-import DynamicFieldSet from './lsWorkSheet';
 import { WorkShiftDto } from '../../../services/schedule/dto/workShiftDto';
+import DynamicFieldSet from './lsWorkSheet';
 
-type PickerType = 'date';
+const { TabPane } = Tabs;
 export interface ICreateOrUpdateClassProps {
   visible: boolean;
   onCancel: () => void;
@@ -20,14 +18,12 @@ export interface ICreateOrUpdateClassProps {
   courseStore: CourseStore;
   selectedCourseId: number;
   roomStore: RoomStore;
-  selectedRoomId: number;
   onUpdateLsWorkSheet: (newLsWorkSheet: WorkShiftDto[]) => void;
 }
 
 export interface ICreateOrUpdateClassState {
   maxResultCourseCount: number;
   maxResultRoomCount: number;
-  type: PickerType;
 }
 
 class CreateOrUpdateClass extends React.Component<
@@ -39,15 +35,19 @@ class CreateOrUpdateClass extends React.Component<
     this.state = {
       maxResultCourseCount: 10,
       maxResultRoomCount: 10,
-      type: 'date',
     };
   }
 
-  async componentDidMount() {
+  async componentDidMount(): Promise<void> {
     this.getAll();
   }
 
-  async getAll() {
+  async componentDidUpdate(_prevProps: any, prevState: { maxResultCourseCount: number }) {
+    const { maxResultCourseCount } = this.state;
+    if (prevState.maxResultCourseCount !== maxResultCourseCount) await this.getAll();
+  }
+
+  async getAll(): Promise<void> {
     const { courseStore, roomStore } = this.props;
     const { maxResultCourseCount, maxResultRoomCount } = this.state;
 
@@ -72,33 +72,16 @@ class CreateOrUpdateClass extends React.Component<
 
   validCourseValue = (rule: any, value: any) => {
     if (value === 'Select Course') {
-      return Promise.reject('Please select value for Course');
+      return Promise.reject(new Error('Please select value for Course'));
     }
     return Promise.resolve();
   };
 
   validRoomValue = (rule: any, value: any) => {
     if (value === 'Select Room') {
-      return Promise.reject('Please select value for Room');
+      return Promise.reject(new Error('Please select value for Room'));
     }
     return Promise.resolve();
-  };
-
-  validateStartDate = (rule: any, value: any) => {
-    const now = moment().startOf('day');
-    if (!value || !value.isValid()) {
-      return Promise.reject('Please select a valid start date');
-    }
-
-    if (value.isBefore(now)) {
-      return Promise.reject('Start date must be greater than or equal to the current date');
-    }
-
-    return Promise.resolve();
-  };
-
-  onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(dateString);
   };
 
   render() {
@@ -149,12 +132,10 @@ class CreateOrUpdateClass extends React.Component<
       courseStore,
       selectedCourseId,
       roomStore,
-      selectedRoomId,
       onUpdateLsWorkSheet,
     } = this.props;
     const courses = courseStore.courses?.items || [];
     const rooms = roomStore.rooms?.items || [];
-    const { type } = this.state;
     return (
       <Modal
         visible={visible}
@@ -171,164 +152,138 @@ class CreateOrUpdateClass extends React.Component<
           ref={formRef}
           initialValues={{
             courseId: modalType === 'create' ? 'Select Course' : selectedCourseId,
-            roomId: modalType === 'create' ? 'Select Room' : selectedRoomId,
+            roomId: modalType === 'create' ? 'Select Room' : null,
           }}
         >
-          <Row gutter={[24, 24]}>
-            <Col span={12}>
-              <Form.Item label={L('Code')} {...formItemLayout} name="code" rules={rules.code}>
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={L('LimitStudent')}
-                {...formItemLayout}
-                name="limitStudent"
-                rules={rules.limitStudent}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[24, 24]}>
-            <Col span={12}>
-              <Form.Item
-                label={L('Course')}
-                {...formItemLayout}
-                name="courseId"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please select a course',
-                  },
-                  {
-                    validator: this.validCourseValue,
-                  },
-                ]}
-              >
-                <Select
-                  options={courses.map((course) => ({
-                    key: course.id,
-                    value: course.id,
-                    label: course.courseName,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={L('Room')}
-                {...formItemLayout}
-                name="roomId"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please select a room',
-                  },
-                  {
-                    validator: this.validRoomValue,
-                  },
-                ]}
-                // initialValue={this.state.type}
-              >
-                <Select
-                  options={rooms.map((room) => ({
-                    key: room.id,
-                    value: room.id,
-                    label: room.roomName,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[24, 24]}>
-            <Col span={12}>
-              <Form.Item
-                label={L('Start Date')}
-                {...formItemLayout}
-                name={['startDate']}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please select a start date',
-                  },
-                  {
-                    validator: this.validateStartDate,
-                  },
-                ]}
-                valuePropName={type}
-              >
-                <DatePicker onChange={this.onChange} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={L('End Date')}
-                {...formItemLayout}
-                name={['endDate']}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please select an end date',
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      const startDate = getFieldValue('startDate');
-
-                      if (!value || !startDate || !startDate.isValid() || !value.isValid()) {
-                        return Promise.reject('Please select valid dates');
-                      }
-
-                      if (startDate.isAfter(value)) {
-                        return Promise.reject('End date must be after start date');
-                      }
-
-                      return Promise.resolve();
-                    },
-                  }),
-                ]}
-                valuePropName={type}
-              >
-                <DatePicker />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[24, 24]}>
-            <Col span={12}>
-              <Form.Item
-                label={L('CurrentStudent')}
-                {...formItemLayout}
-                name="currentStudent"
-                initialValue={0}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={L('LessionTimes')}
-                {...formItemLayout}
-                name="lessionTimes"
-                initialValue={0}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={[24, 24]}>
-            <Col span={12}>
-              <Form.Item
-                label={L('IsActive')}
-                {...tailFormItemLayout}
-                name="isActive"
-                valuePropName="checked"
-              >
-                <Checkbox>Aktif</Checkbox>
-              </Form.Item>
-            </Col>
-          </Row>
-          <DynamicFieldSet onUpdateLsWorkSheet={onUpdateLsWorkSheet} />
+          <Tabs defaultActiveKey="class" size="small" tabBarGutter={64}>
+            <TabPane tab="ClassInfo" key="class">
+              <Row gutter={[24, 24]}>
+                <Col span={12}>
+                  <Form.Item
+                    label={L('Code')}
+                    labelCol={formItemLayout.labelCol}
+                    wrapperCol={formItemLayout.wrapperCol}
+                    name="code"
+                    rules={rules.code}
+                  >
+                    <Input autoFocus />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label={L('LimitStudent')}
+                    labelCol={formItemLayout.labelCol}
+                    wrapperCol={formItemLayout.wrapperCol}
+                    name="limitStudent"
+                    rules={rules.limitStudent}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={[24, 24]}>
+                <Col span={12}>
+                  <Form.Item
+                    label={L('Course')}
+                    labelCol={formItemLayout.labelCol}
+                    wrapperCol={formItemLayout.wrapperCol}
+                    name="courseId"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please select a course',
+                      },
+                      {
+                        validator: this.validCourseValue,
+                      },
+                    ]}
+                  >
+                    <Select
+                      options={courses.map((course) => ({
+                        key: course.id,
+                        value: course.id,
+                        label: course.courseName,
+                      }))}
+                    />
+                  </Form.Item>
+                </Col>
+                {modalType === 'create' ? (
+                  <Col span={12}>
+                    <Form.Item
+                      label={L('Room')}
+                      labelCol={formItemLayout.labelCol}
+                      wrapperCol={formItemLayout.wrapperCol}
+                      name="roomId"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please select a room',
+                        },
+                        {
+                          validator: this.validRoomValue,
+                        },
+                      ]}
+                    >
+                      <Select
+                        options={rooms.map((room) => ({
+                          key: room.id,
+                          value: room.id,
+                          label: room.roomName,
+                        }))}
+                      />
+                    </Form.Item>
+                  </Col>
+                ) : (
+                  ''
+                )}
+              </Row>
+              <Row gutter={[24, 24]}>
+                <Col span={12}>
+                  <Form.Item
+                    label={L('CurrentStudent')}
+                    labelCol={formItemLayout.labelCol}
+                    wrapperCol={formItemLayout.wrapperCol}
+                    name="currentStudent"
+                    initialValue={0}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label={L('LessionTimes')}
+                    labelCol={formItemLayout.labelCol}
+                    wrapperCol={formItemLayout.wrapperCol}
+                    name="lessionTimes"
+                    initialValue={0}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={[24, 24]}>
+                <Col span={12}>
+                  <Form.Item
+                    label={L('IsActive')}
+                    labelCol={tailFormItemLayout.labelCol}
+                    wrapperCol={tailFormItemLayout.wrapperCol}
+                    name="isActive"
+                    valuePropName="checked"
+                  >
+                    <Checkbox>Aktif</Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </TabPane>
+            <TabPane
+              tab="ListWorkSheets"
+              key="listWorkSheets"
+              forceRender
+              disabled={modalType !== 'create'}
+            >
+              <DynamicFieldSet onUpdateLsWorkSheet={onUpdateLsWorkSheet} />
+            </TabPane>
+          </Tabs>
         </Form>
       </Modal>
     );
