@@ -4,6 +4,7 @@ using EMS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMS.Migrations
 {
     [DbContext(typeof(EMSDbContext))]
-    partial class EMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231214030947_init_Db_V2")]
+    partial class init_Db_V2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1584,6 +1586,9 @@ namespace EMS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
+                    b.Property<long?>("ClassId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
@@ -1618,6 +1623,8 @@ namespace EMS.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
 
                     b.HasIndex("RoomId");
 
@@ -2469,6 +2476,10 @@ namespace EMS.Migrations
 
             modelBuilder.Entity("EMS.Authorization.Schedules.Schedule", b =>
                 {
+                    b.HasOne("EMS.Authorization.Classes.Class", null)
+                        .WithMany("Schedules")
+                        .HasForeignKey("ClassId");
+
                     b.HasOne("EMS.Authorization.Rooms.Room", "Room")
                         .WithMany("Schedules")
                         .HasForeignKey("RoomId")
@@ -2692,6 +2703,8 @@ namespace EMS.Migrations
 
             modelBuilder.Entity("EMS.Authorization.Classes.Class", b =>
                 {
+                    b.Navigation("Schedules");
+
                     b.Navigation("UserClasses");
                 });
 
