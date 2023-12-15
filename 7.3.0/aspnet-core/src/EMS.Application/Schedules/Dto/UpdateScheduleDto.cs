@@ -12,8 +12,6 @@ namespace EMS.Schedules.Dto
         [Required]
         public DateTime Date { get; set; }
         [Required]
-        public long ClassId { get; set; }
-        [Required]
         public int RoomId { get; set; }
         [Required]
         public DayOfTheWeek DayOfWeek { get; set; }
