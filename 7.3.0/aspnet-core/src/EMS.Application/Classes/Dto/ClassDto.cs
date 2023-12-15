@@ -2,7 +2,6 @@
 using Abp.AutoMapper;
 using EMS.Authorization.Classes;
 using EMS.Courses.Dto;
-using System;
 
 namespace EMS.Classes.Dto
 {
@@ -11,8 +10,6 @@ namespace EMS.Classes.Dto
     {
         public string Code { get; set; }
         public CourseDto Course { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
         public long LimitStudent { get; set; }
         public long CurrentStudent { get; set; }
         public int LessionTimes { get; set; }
