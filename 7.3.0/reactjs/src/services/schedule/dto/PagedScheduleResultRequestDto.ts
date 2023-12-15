@@ -2,6 +2,4 @@ import { PagedFilterAndSortedRequest } from '../../dto/pagedFilterAndSortedReque
 
 export interface PagedScheduleResultRequestDto extends PagedFilterAndSortedRequest {
   keyword: string;
-  classId: number;
-  courseId: number;
 }

@@ -40,10 +40,10 @@ class ScheduleService {
     return result.data.result;
   }
 
-  public async hashSchedule(id: number) {
-    let result = await http.post(`api/services/app/Schedule/HashSchedule?id=${id}`);
-    return result.data.result;
-  }
+  // public async hashSchedule(id: number) {
+  //   let result = await http.post(`api/services/app/Schedule/HashSchedule?id=${id}`);
+  //   return result.data.result;
+  // }
 }
 
 export default new ScheduleService();

@@ -22,4 +22,6 @@ export default class Stores {
   static UserClassStore = 'userClassStore';
 
   static RoomStore = 'roomStore';
+
+  static ClassTimelineStore = 'classTimelineStore';
 }

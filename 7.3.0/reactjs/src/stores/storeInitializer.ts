@@ -10,6 +10,7 @@ import ScheduleStore from './scheduleStore';
 import TeacherStore from './teacherStore';
 import UserClassStore from './userClassStore';
 import RoomStore from './roomStore';
+import ClassTimelineStore from './classTimelineStore';
 
 export default function initializeStores() {
   return {
@@ -25,5 +26,6 @@ export default function initializeStores() {
     teacherStore: new TeacherStore(),
     userClassStore: new UserClassStore(),
     roomStore: new RoomStore(),
+    classTimelineStore: new ClassTimelineStore(),
   };
 }

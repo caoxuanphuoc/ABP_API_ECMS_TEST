@@ -55,8 +55,6 @@ class ClassStore {
         maxContainer: 0,
       },
       lsWorkSheet: [],
-      startDate: new Date(),
-      endDate: new Date(),
       limitStudent: 0,
       currentStudent: 0,
       lessionTimes: 0,

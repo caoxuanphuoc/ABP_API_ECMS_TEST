@@ -12,7 +12,7 @@ class ScheduleStore {
 
   @observable editSchedule!: CreateOrUpdateScheduleInput;
 
-  @observable hashString!: string;
+  // @observable hashString!: string;
 
   @action
   async create(createScheduleInput: CreateOrUpdateScheduleInput) {
@@ -47,28 +47,6 @@ class ScheduleStore {
   async createSchedule() {
     this.editSchedule = {
       id: 0,
-      class: {
-        id: 0,
-        code: 'string',
-        course: {
-          id: 0,
-          courseName: 'string',
-          courseFee: 0,
-          quantity: 0,
-        },
-        room: {
-          roomName: '',
-          maxContainer: 0,
-          id: 0,
-        },
-        startDate: new Date(),
-        endDate: new Date(),
-        limitStudent: 0,
-        currentStudent: 0,
-        lessionTimes: 0,
-        isActive: true,
-        lsWorkSheet: [],
-      },
       room: {
         roomName: '',
         maxContainer: 0,
@@ -86,11 +64,11 @@ class ScheduleStore {
     this.schedules = result;
   }
 
-  @action
-  async hashSchedule(scheduleId: number) {
-    let result = await scheduleService.hashSchedule(scheduleId);
-    this.hashString = result;
-  }
+  // @action
+  // async hashSchedule(scheduleId: number) {
+  //   let result = await scheduleService.hashSchedule(scheduleId);
+  //   this.hashString = result;
+  // }
 }
 
 export default ScheduleStore;

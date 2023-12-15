@@ -15,5 +15,22 @@ enum Shift {
     [Shift.Tiet_9_10]: "Tiết 9 - Tiết 10",
     [Shift.Tiet_11_12]: "Tiết 11 - Tiết 12",
   };
+
+  // function mapShiftTime(shiftTimeString: string): Shift {
+  //   switch(shiftTimeString) {
+  //       case "Tiet_1_2":
+  //         return Shift.Tiet_1_2;
+  //       case "Tiet_3_4":
+  //         return Shift.Tiet_3_4;
+  //       case "Tiet_5_6":
+  //         return Shift.Tiet_5_6;
+  //       case "Tiet_7_8":
+  //         return Shift.Tiet_7_8;
+  //       case "Tiet_9_10":
+  //         return Shift.Tiet_9_10;
+  //       default:
+  //         return Shift.Tiet_11_12;
+  //     }
+  // }
   
   export { Shift, shiftNames };
