@@ -1,8 +1,6 @@
 ﻿using Abp.Domain.Entities.Auditing;
 using EMS.Authorization.Courses;
-using EMS.Authorization.Schedules;
 using EMS.Authorization.UserClasses;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -12,8 +10,8 @@ namespace EMS.Authorization.Classes
     public class Class : FullAuditedEntity<long>
     {
         public string Code { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        //public DateTime StartDate { get; set; }
+        //public DateTime EndDate { get; set; }
         public long LimitStudent { get; set; }
         public long CurrentStudent { get; set; }
         public int LessionTimes { get; set; } // Số buổi học
@@ -21,7 +19,7 @@ namespace EMS.Authorization.Classes
         [ForeignKey("Course")]
         public long CourseId { get; set; }
         public Course Course { get; set; }
-        public ICollection<Schedule> Schedules { get; set; }
+        //public ICollection<Schedule> Schedules { get; set; }
         public ICollection<UserClass> UserClasses { get; set; }
     }
 }
