@@ -199,6 +199,11 @@ class CreateOrUpdateClass extends React.Component<
                     ]}
                   >
                     <Select
+                      showSearch
+                      placeholder='Select course'
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())}
                       options={courses.map((course) => ({
                         key: course.id,
                         value: course.id,
@@ -225,6 +230,11 @@ class CreateOrUpdateClass extends React.Component<
                       ]}
                     >
                       <Select
+                        showSearch
+                        placeholder='Select room'
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())}
                         options={rooms.map((room) => ({
                           key: room.id,
                           value: room.id,
