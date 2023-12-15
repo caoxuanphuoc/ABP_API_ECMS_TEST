@@ -11,10 +11,10 @@ using EMS.Authorization.Courses;
 using EMS.Authorization.Rooms;
 using EMS.Authorization.Schedules;
 using EMS.Classes.Dto;
-using EMS.Schedules.Dto;
+using EMS.ClassTimelines;
+using EMS.ClassTimelines.Dto;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,16 +26,19 @@ namespace EMS.Classes
         private readonly IRepository<Schedule, long> _scheduleRepository;
         private readonly IRepository<Course, long> _courseRepository;
         private readonly IRepository<Room, int> _roomRepository;
+        private readonly IRepository<ClassTimeline, long> _classTimelineRepository;
         public ClassAppService(
             IRepository<Class, long> repository,
             IRepository<Schedule, long> scheduleRepository,
             IRepository<Course, long> courseRepository,
-            IRepository<Room, int> roomRepository
+            IRepository<Room, int> roomRepository,
+            IRepository<ClassTimeline, long> classTimelineRepository
         ) : base(repository)
         {
             _scheduleRepository = scheduleRepository;
             _courseRepository = courseRepository;
             _roomRepository = roomRepository;
+            _classTimelineRepository = classTimelineRepository;
         }
         // Create Query
         protected override IQueryable<Class> CreateFilteredQuery(PagedClassResultRequestDto input)
@@ -57,28 +60,26 @@ namespace EMS.Classes
         // Sorting by User
         protected override IQueryable<Class> ApplySorting(IQueryable<Class> query, PagedClassResultRequestDto input)
         {
-            return query.OrderBy(r => r.StartDate);
+            return query.OrderBy(r => r.Code);
         }
         // Check Course exists or not
-        protected async Task<Course> CheckCourseIsExists(long courseId)
+        protected async Task CheckCourseIsExists(long courseId)
         {
-            var course = await _courseRepository.GetAsync(courseId);
-            if ((course != null && course.IsDeleted) || course == null)
+            var course = await _courseRepository.CountAsync(x => x.Id == courseId);
+            if (course == 0)
             {
-                throw new EntityNotFoundException("Not found Course");
+                throw new UserFriendlyException("Not found Course");
             }
-            return course;
         }
 
         // Check Room exists or not 
-        protected async Task<Room> CheckRoomIsExists(int roomId)
+        protected async Task CheckRoomIsExists(int roomId)
         {
-            var room = await _roomRepository.GetAsync(roomId);
-            if (room == null || (room != null && room.IsDeleted))
+            var room = await _roomRepository.CountAsync(x => x.Id == roomId);
+            if (room == 0)
             {
-                throw new EntityNotFoundException("Not found Room");
+                throw new UserFriendlyException("Not found Room");
             }
-            return room;
         }
 
         // Get Class
@@ -95,47 +96,59 @@ namespace EMS.Classes
         // Create automatic schedule
         // Thuật toán
         /// <summary>
-        ///  Với mỗi ngày nằm trong khoảng từ startTime đên EndTime 
+        /// Với mỗi lịch học (workShift)
+        ///  Thì mỗi ngày nằm trong khoảng từ startDate đên EndDate 
         ///      + Kiểm tra xem ngày đó là ngày thứ mấy.
         ///          + Nếu ngày đó trong với lịch học (workShift) đã nhập ở class)
-        ///          + thì tạo một bản ghi lưu vào schedule table
+        ///          + thì tạo một bản ghi lưu vào schedule table và ClassTimeline table
         ///          Tiếp tục cho đến khi đến ngày kết thúc.
         /// </summary>
-        /// <param name="startTime"></param>
-        /// <param name="endTime"></param>
         /// <param name="classId"></param>
         /// <param name="roomId"></param>
         /// <param name="LsWorkShift"></param>
         /// <returns></returns>
-        protected async Task<PagedResultDto<ScheduleDto>> CreateAutomatic(CreateAutomaticDto input)
+
+        protected async Task CreateAutomatic(CreateAutomaticDto input)
         {
-            DateTime Temp = input.StartTime;
-            List<ScheduleDto> result = new();
-            while (Temp <= input.EndTime)
+            foreach (var workShift in input.ListWorkShifts)
             {
-                DayOfWeek checkDOW = Temp.DayOfWeek;
-                input.ListWorkShifts.ForEach(async e =>
+                DateTime temp = workShift.StartDate;
+
+                Schedule schedule = new()
                 {
-                    if (e.DateOfWeek.ToString() == checkDOW.ToString())
+                    RoomId = input.RoomId,
+                    DayOfWeek = workShift.DateOfWeek,
+                    Shift = workShift.ShiftTime
+                };
+
+                while (temp <= workShift.EndDate)
+                {
+                    if (temp.DayOfWeek.ToString() == workShift.DateOfWeek.ToString())
                     {
-                        Schedule schedule = new()
+                        schedule.Date = temp;
+
+                        var createScheduleId = await _scheduleRepository.InsertAndGetIdAsync(schedule);
+
+                        var classTimelineDto = new CreateClassTimelineDto
                         {
-                            Date = Temp,
+                            StartDate = temp,
+                            EndDate = workShift.EndDate,
                             ClassId = input.ClassId,
-                            RoomId = input.RoomId,
-                            DayOfWeek = e.DateOfWeek,
-                            Shift = e.ShiftTime
+                            ScheduleId = createScheduleId,
                         };
-                        await _scheduleRepository.InsertAsync(schedule);
-                        var scheduleDto = ObjectMapper.Map<ScheduleDto>(schedule);
-                        result.Add(scheduleDto);
+
+                        await CreateClassTimelineAsync(classTimelineDto);
                     }
-                });
-
-                Temp = Temp.AddDays(1);
-
+                    temp = temp.AddDays(1);
+                }
             }
-            return new PagedResultDto<ScheduleDto>(result.Count, result); ;
+        }
+
+        // Create new ClassTimeline
+        protected async Task CreateClassTimelineAsync(CreateClassTimelineDto input)
+        {
+            var ClassTimeline = ObjectMapper.Map<ClassTimeline>(input);
+            await _classTimelineRepository.InsertAsync(ClassTimeline);
         }
 
         //Create new Class
@@ -144,17 +157,15 @@ namespace EMS.Classes
             CheckCreatePermission();
             await CheckCourseIsExists(input.CourseId);
             await CheckRoomIsExists(input.RoomId);
+
             var classRoom = ObjectMapper.Map<Class>(input);
             var createClassId = await Repository.InsertAndGetIdAsync(classRoom);
             var createAutomaticDto = new CreateAutomaticDto
             {
-                StartTime = input.StartDate,
-                EndTime = input.EndDate,
                 ClassId = createClassId,
                 RoomId = input.RoomId,
                 ListWorkShifts = input.lsWorkSheet,
             };
-
             await CreateAutomatic(createAutomaticDto);
             var getCreateClassId = new EntityDto<long> { Id = createClassId };
             return await GetAsync(getCreateClassId);
@@ -175,7 +186,7 @@ namespace EMS.Classes
         public override async Task DeleteAsync(EntityDto<long> input)
         {
             CheckDeletePermission();
-            var scheduleCount = await _scheduleRepository.CountAsync(x => x.ClassId == input.Id);
+            var scheduleCount = await _classTimelineRepository.CountAsync(x => x.ClassId == input.Id);
             if (scheduleCount > 0)
             {
                 throw new UserFriendlyException($"Class is being used with id = {input.Id}");
