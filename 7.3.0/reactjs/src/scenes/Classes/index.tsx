@@ -1,7 +1,6 @@
 import { inject, observer } from 'mobx-react';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Dropdown, Input, Menu, Modal, Row, Table, Tag } from 'antd';
-import moment from 'moment';
 import { FormInstance } from 'antd/lib/form';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -12,7 +11,6 @@ import AppComponentBase from '../../components/AppComponentBase';
 import { EntityDto } from '../../services/dto/entityDto';
 import { L } from '../../lib/abpUtility';
 import CreateOrUpdateClass from './components/createOrUpdateClass';
-import { CourseCreen } from './components/Courses/courseScreen';
 import ScheduleStore from '../../stores/scheduleStore';
 import RoomStore from '../../stores/roomStore';
 import { WorkShiftDto } from '../../services/schedule/dto/workShiftDto';
@@ -31,8 +29,6 @@ export interface IClassState {
   classId: number;
   filter: string;
   selectedCourseId: number;
-  selectedRoomId: number;
-  course: CourseCreen;
   lsWorkSheet: WorkShiftDto[];
   courseId: number;
 }
@@ -52,16 +48,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     classId: 0,
     filter: '',
     selectedCourseId: 0,
-    selectedRoomId: 0,
-    course: {
-      code: '',
-      courseName: '',
-      courseFee: 0,
-      quantity: 0,
-      limitStudent: 0,
-      currentStudent: 0,
-      lessionTimes: 0,
-    },
     lsWorkSheet: [],
     courseId: 0,
   };
@@ -70,7 +56,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     await this.getAll();
   }
 
-  async getAll() {
+  async getAll(): Promise<void> {
     await this.props.classStore.getAll({
       maxResultCount: this.state.maxResultCount,
       skipCount: this.state.skipCount,
@@ -85,29 +71,21 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
       },
       async () => await this.getAll()
     );
-  };
+  }
 
-  Modal = () => {
+  Modal = (): void => {
     this.setState({
       modalVisible: !this.state.modalVisible,
     });
   };
 
-  async createOrUpdateModalOpen(entityDto: EntityDto) {
+  async createOrUpdateModalOpen(entityDto: EntityDto): Promise<void> {
     if (entityDto.id === 0) {
       await this.props.classStore.createClass();
     } else {
       await this.props.classStore.get(entityDto);
-      await this.props.scheduleStore.getAll({
-        maxResultCount: 10,
-        skipCount: 0,
-        keyword: '',
-        classId: entityDto.id,
-        courseId: 0,
-      });
     }
     this.setState({
-      selectedRoomId: this.props.scheduleStore.schedules?.items[0]?.room.id,
       selectedCourseId: this.props.classStore.editClass?.course?.id,
       classId: entityDto.id,
     });
@@ -118,7 +96,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     }, 100);
   }
 
-  delete(input: EntityDto) {
+  delete(input: EntityDto): void {
     const self = this;
     confirm({
       title: 'Do you want to delete these items?',
@@ -130,8 +108,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
 
   handleCreate = () => {
     const form = this.formRef.current;
-
-    form!.validateFields().then(async (values: any) => {
+    form?.validateFields().then(async (values: any) => {
       const updateValues = { ...values };
       updateValues.lsWorkSheet = this.state.lsWorkSheet;
       if (this.state.classId === 0) {
@@ -145,7 +122,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
 
       await this.getAll();
       this.setState({ modalVisible: false });
-      form!.resetFields();
+      form?.resetFields();
     });
   };
 
@@ -153,7 +130,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     this.setState({ filter: value }, async () => await this.getAll());
   };
 
-  handleUpdateLsWorkSheet = (newLsWorkSheet: WorkShiftDto[]) => {
+  handleUpdateLsWorkSheet = (newLsWorkSheet: WorkShiftDto[]): void => {
     this.setState({ lsWorkSheet: newLsWorkSheet });
   };
 
@@ -169,18 +146,25 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
         render: (text: string) => <div>{text}</div>,
       },
       {
-        title: L('StartDate'),
-        dataIndex: 'startDate',
-        key: 'startDate',
+        title: L('CourseName'),
+        dataIndex: 'courseName',
+        key: 'courseName',
         with: 150,
-        render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
+        render: (text: string, record: any) => <div>{record.course.courseName}</div>,
       },
       {
-        title: L('EndDate'),
-        dataIndex: 'endDate',
-        key: 'endDate',
+        title: L('LimitStudent'),
+        dataIndex: 'limitStudent',
+        key: 'limitStudent',
         with: 150,
-        render: (text: string) => <div>{moment(text.split('T')[0]).format('DD/MM/YYYY')}</div>,
+        render: (text: string) => <div>{text}</div>,
+      },
+      {
+        title: L('CurrentStudent'),
+        dataIndex: 'currentStudent',
+        key: 'currentStudent',
+        with: 150,
+        render: (text: string) => <div>{text}</div>,
       },
       {
         title: L('IsActive'),
@@ -310,7 +294,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           courseStore={this.props.courseStore}
           selectedCourseId={this.state.selectedCourseId}
           roomStore={this.props.roomStore}
-          selectedRoomId={this.state.selectedRoomId}
           onUpdateLsWorkSheet={this.handleUpdateLsWorkSheet}
         />
       </Card>

@@ -5,7 +5,6 @@ import { inject, observer } from 'mobx-react';
 import AppComponentBase from '../../components/AppComponentBase';
 import ScheduleStore from '../../stores/scheduleStore';
 import UserClassStore from '../../stores/userClassStore';
-import { CourseCreen } from '../Classes/components/Courses/courseScreen';
 import Stores from '../../stores/storeIdentifier';
 import CourseStore from '../../stores/courseStore';
 import ListMember from './components/ListMember';
@@ -18,7 +17,6 @@ export interface IManagerScreenProps extends RouteComponentProps {
 
 export interface IManagerScreenState {
   activeTabKey: string;
-  course: CourseCreen;
 }
 
 interface StateType {
@@ -53,30 +51,30 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
     currentStudent: any,
     lessionTimes: any
   ) {
-    const { course } = this.state;
+    // const { course } = this.state;
     const { courseStore } = this.props;
     await courseStore.get(id);
 
-    const result = courseStore.editCourse;
+    // const result = courseStore.editCourse;
 
-    const updateCourse = {
-      ...course,
-      code,
-      courseName: result.courseName,
-      courseFee: result.courseFee,
-      quatity: result.quantity,
-      limitStudent,
-      currentStudent,
-      lessionTimes,
-    };
+  //   const updateCourse = {
+  //     ...course,
+  //     code,
+  //     courseName: result.courseName,
+  //     courseFee: result.courseFee,
+  //     quatity: result.quantity,
+  //     limitStudent,
+  //     currentStudent,
+  //     lessionTimes,
+  //   };
 
-    this.setState({ course: updateCourse });
-    console.log(course);
+  //   this.setState({ course: updateCourse });
+  //   console.log(course);
   }
 
   public render() {
     console.log(this.props.location.state);
-    //const idClass =this.props.location.state.idClass;
+    // const idClass =this.props.location.state.idClass;
     // this.props.location.state.item.idClass;
     const { state } = this.props.location;
     const StateObject = state == null ? null : (state as StateType);
