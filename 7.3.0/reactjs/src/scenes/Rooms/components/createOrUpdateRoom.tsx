@@ -50,7 +50,7 @@ class CreateOrUpdateRoom extends React.Component<IRoomProps> {
             name="roomName"
             rules={rules.roomName}
           >
-            <Input />
+            <Input autoFocus />
           </Form.Item>
           <Form.Item
             label={L('MaxContainer')}

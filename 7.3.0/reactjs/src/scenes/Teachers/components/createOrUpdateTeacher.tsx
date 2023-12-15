@@ -38,6 +38,11 @@ class CreateOrUpdateTeacher extends React.Component<
     this.getAll();
   }
 
+  async componentDidUpdate(prevProps: any, prevState: { maxResultCount: number }) {
+    const { maxResultCount } = this.state
+    if (prevState.maxResultCount !== maxResultCount) await this.getAll();
+  }
+
   async getAll() {
     const { userStore } = this.props;
     const { maxResultCount } = this.state;
@@ -59,19 +64,12 @@ class CreateOrUpdateTeacher extends React.Component<
   };
 
   public render() {
-    const {
-      visible,
-      onCancel,
-      onCreate,
-      formRef,
-      selectedUserId,
-      modalType,
-      userStore,
-    } = this.props;
+    const { visible, onCancel, onCreate, formRef, selectedUserId, modalType, userStore } =
+      this.props;
 
     const { type } = this.state;
 
-    const users = userStore.users === undefined ? [] : userStore.users.items;
+    const users = userStore.users?.items || [];
 
     const formItemLayout = {
       labelCol: {

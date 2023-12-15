@@ -52,7 +52,7 @@ class CreateOrUpdateCourse extends React.Component<ICreateOrUpdateCourseProps> {
             name="courseName"
             rules={rules.courseName}
           >
-            <Input />
+            <Input autoFocus />
           </Form.Item>
           <Form.Item
             label={L('CourseFee')}

@@ -17,9 +17,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  border: 2px solid cyan; /* Màu và kích thước biên viền */
-  border-radius: 50%;
-  pointer-events: none; /* Ngăn chặn sự kiện nhấp chuột từ việc chạm vào biên viền */
 }
 .date-cell {
   position: relative;
