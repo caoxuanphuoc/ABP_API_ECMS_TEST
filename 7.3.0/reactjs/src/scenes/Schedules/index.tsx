@@ -59,8 +59,21 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     hovered: {},
   };
 
-  async componentDidUpdate(prevProps: any, prevState: { maxResultCourseCount: number; }) {
-    if (prevState.maxResultCourseCount !== this.state.maxResultCourseCount) {
+  async componentDidUpdate(
+    prevProps: any,
+    prevState: {
+      maxResultCourseCount: number;
+      maxResultClassCount: number;
+      selectedCourseId: number;
+      selectedClassId: number;
+    }
+  ) {
+    if (
+      prevState.maxResultCourseCount !== this.state.maxResultCourseCount ||
+      prevState.maxResultClassCount !== this.state.maxResultClassCount ||
+      prevState.selectedCourseId !== this.state.selectedCourseId ||
+      prevState.selectedClassId !== this.state.selectedClassId
+    ) {
       await this.getAll();
     }
   }
@@ -100,13 +113,13 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
       keyword: '',
     });
 
-    const totalClassTimelineCount = this.props.classTimelineStore.classTimelines.totalCount;
+    const totalClassTimelineCount = this.props.classTimelineStore.classTimelines.totalCount || 1;
     this.setState({ maxResultCount: totalClassTimelineCount });
 
-    const totalClassCount = this.props.classStore.classes.totalCount;
+    const totalClassCount = this.props.classStore.classes.totalCount || 1;
     this.setState({ maxResultClassCount: totalClassCount });
 
-    const totalCourseCount = this.props.courseStore.courses.totalCount;
+    const totalCourseCount = this.props.courseStore.courses.totalCount || 1;
     this.setState({ maxResultCourseCount: totalCourseCount });
   }
 
@@ -153,15 +166,16 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
 
   handleClassChange = (value: any) => {
     const selectedClassId = value === 'Select Class' ? 0 : value;
-    this.setState({ selectedClassId }, async () => await this.getAll());
+    this.setState({ selectedClassId, maxResultClassCount: 10 });
   };
 
   handleCourseChange = (value: any) => {
     const selectedCourseId = value === 'Select Course' ? 0 : value;
-    this.setState({ selectedCourseId }, async () => await this.getAll());
+    this.setState({ selectedCourseId, maxResultCourseCount: 10 });
   };
 
   handleQrCode = (id: number) => {
+    this.hide(id);
     this.hashSchedule(id);
     this.Modal();
   };
@@ -176,24 +190,24 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
 
   hide = (item: number): void => {
     this.setState((prevState) => ({
-      clicked: {...prevState.clicked, [item]: false},
-      hovered: {...prevState.hovered, [item]: false},
-    }))
-  }
+      clicked: { ...prevState.clicked, [item]: false },
+      hovered: { ...prevState.hovered, [item]: false },
+    }));
+  };
 
   handleHoverChange = (open: boolean, itemId: number): void => {
     this.setState((prevState) => ({
       hovered: { ...prevState.hovered, [itemId]: open },
       clicked: { ...prevState.clicked, [itemId]: false },
     }));
-  }
+  };
 
   handleClickedChange = (open: boolean, itemId: number): void => {
     this.setState((prevState) => ({
       hovered: { ...prevState.hovered, [itemId]: false },
       clicked: { ...prevState.clicked, [itemId]: open },
     }));
-  }
+  };
 
   public render() {
     const { classTimelineStore, classStore, courseStore } = this.props;
@@ -247,11 +261,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
                     <p>- {item.classroom}</p>
                   </div>
                 )}
-                title={(
-                  <div style={{ textAlign : 'center' }}>
-                    {item.title}
-                  </div>
-                )}
+                title={<div style={{ textAlign: 'center' }}>{item.title}</div>}
                 trigger="hover"
                 visible={this.state.hovered[item.id]}
                 onVisibleChange={(visible) => this.handleHoverChange(visible, item.id)}
@@ -260,20 +270,33 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
                   content={(
                     <Row gutter={[16, 8]}>
                       <Col span={8}>
-                        <QrcodeOutlined onClick={() => this.handleQrCode(item.id)} style={{ fontSize: 32}} />
+                        <QrcodeOutlined
+                          onClick={() => this.handleQrCode(item.id)}
+                          style={{ fontSize: 32 }}
+                        />
                       </Col>
                       <Col span={8}>
-                        <EditOutlined style={{ fontSize: 32}} />
+                        <EditOutlined style={{ fontSize: 32 }} />
                       </Col>
                       <Col span={8}>
-                        <DeleteOutlined style={{ fontSize: 32}} />
+                        <DeleteOutlined style={{ fontSize: 32 }} />
                       </Col>
                     </Row>
                   )}
                   title={(
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 20 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: 20,
+                      }}
+                    >
                       <span>Action</span>
-                      <CloseOutlined style={{ marginLeft: 'auto' }} onClick={() => this.hide(item.id)} />
+                      <CloseOutlined
+                        style={{ marginLeft: 'auto' }}
+                        onClick={() => this.hide(item.id)}
+                      />
                     </div>
                   )}
                   trigger="click"
