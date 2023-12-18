@@ -158,7 +158,7 @@ class DynamicFieldSet extends React.Component<DynamicFieldSetProps, DynamicField
           />
         </div>
         {fields.map((field) => (
-          <Form.Item key={field.key} name={['lsWorkSheet']}>
+          <Form.Item key={field.key}>
             <Row gutter={[24, 24]}>
               <Col span={12}>
                 <Form.Item

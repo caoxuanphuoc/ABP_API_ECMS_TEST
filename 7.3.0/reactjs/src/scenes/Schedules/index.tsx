@@ -1,9 +1,10 @@
 import React from 'react';
 import { FormInstance } from 'antd/lib/form';
 import { inject, observer } from 'mobx-react';
-import { Badge, Calendar, Card, Col, Row, Select, Tooltip } from 'antd';
+import { Badge, Calendar, Card, Col, Popover, Row, Select } from 'antd';
 import { BadgeProps } from 'antd/lib/badge';
 import moment, { Moment } from 'moment';
+import { CloseOutlined, DeleteOutlined, EditOutlined, QrcodeOutlined } from '@ant-design/icons';
 import AppComponentBase from '../../components/AppComponentBase';
 import Stores from '../../stores/storeIdentifier';
 import './index.css';
@@ -13,6 +14,7 @@ import { Shift, shiftNames } from '../../services/schedule/dto/shift';
 import CreateQr from './components/createQr';
 import CourseStore from '../../stores/courseStore';
 import ClassStore from '../../stores/classStore';
+import { L } from '../../lib/abpUtility';
 
 export interface IScheduleProps {
   classTimelineStore: ClassTimelineStore;
@@ -31,6 +33,8 @@ export interface IScheduleState {
   maxResultClassCount: number;
   maxResultCourseCount: number;
   hashSchedule: string;
+  clicked: any;
+  hovered: any;
 }
 
 // const { confirm } = Modal;
@@ -51,6 +55,8 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     maxResultClassCount: 10,
     maxResultCourseCount: 10,
     hashSchedule: '',
+    clicked: {},
+    hovered: {},
   };
 
   async componentDidUpdate(prevProps: any, prevState: { maxResultCourseCount: number; }) {
@@ -168,6 +174,27 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     this.setState({ hashSchedule: result });
   }
 
+  hide = (item: number): void => {
+    this.setState((prevState) => ({
+      clicked: {...prevState.clicked, [item]: false},
+      hovered: {...prevState.hovered, [item]: false},
+    }))
+  }
+
+  handleHoverChange = (open: boolean, itemId: number): void => {
+    this.setState((prevState) => ({
+      hovered: { ...prevState.hovered, [itemId]: open },
+      clicked: { ...prevState.clicked, [itemId]: false },
+    }));
+  }
+
+  handleClickedChange = (open: boolean, itemId: number): void => {
+    this.setState((prevState) => ({
+      hovered: { ...prevState.hovered, [itemId]: false },
+      clicked: { ...prevState.clicked, [itemId]: open },
+    }));
+  }
+
   public render() {
     const { classTimelineStore, classStore, courseStore } = this.props;
     const classeTimelines = classTimelineStore.classTimelines?.items || [];
@@ -185,11 +212,19 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
         listData = matchingSchedules.map((matchingSchedule) => {
           const shiftValue: Shift =
             Shift[matchingSchedule.schedule.shift as unknown as keyof typeof Shift];
+
+          // Format the shift information (Tiết 1 - Tiết 2 => Tiết: 1 - 2)
+          const lession = shiftNames[shiftValue].match(/\d+/g);
+          const formattedShift = lession ? `${lession.join(' - ')}` : shiftValue;
+
           return {
             type: 'success',
             content: `${shiftNames[shiftValue]} -
                       ${matchingSchedule.class.code} -
                       ${matchingSchedule.class.course.courseName}`,
+            lesson: `${L(`Lession`)}: ${formattedShift}`,
+            classroom: `${L(`Classroom`)}: ${matchingSchedule.class.code}`,
+            title: matchingSchedule.class.course.courseName,
             id: matchingSchedule.id,
           };
         });
@@ -204,14 +239,54 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
       return (
         <ul className="events">
           {listData.map((item) => (
-            <li key={item.id} onClick={() => this.handleQrCode(item.id)}>
-              <Tooltip title={item.content}>
-                <Badge
-                  className={`date-cell ${hasEvents ? 'important-date-cell' : ''}`}
-                  status={item.type as BadgeProps['status']}
-                  text={item.content}
-                />
-              </Tooltip>
+            <li key={item.id}>
+              <Popover
+                content={(
+                  <div>
+                    <p>- {item.lesson}</p>
+                    <p>- {item.classroom}</p>
+                  </div>
+                )}
+                title={(
+                  <div style={{ textAlign : 'center' }}>
+                    {item.title}
+                  </div>
+                )}
+                trigger="hover"
+                visible={this.state.hovered[item.id]}
+                onVisibleChange={(visible) => this.handleHoverChange(visible, item.id)}
+              >
+                <Popover
+                  content={(
+                    <Row gutter={[16, 8]}>
+                      <Col span={8}>
+                        <QrcodeOutlined onClick={() => this.handleQrCode(item.id)} style={{ fontSize: 32}} />
+                      </Col>
+                      <Col span={8}>
+                        <EditOutlined style={{ fontSize: 32}} />
+                      </Col>
+                      <Col span={8}>
+                        <DeleteOutlined style={{ fontSize: 32}} />
+                      </Col>
+                    </Row>
+                  )}
+                  title={(
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 20 }}>
+                      <span>Action</span>
+                      <CloseOutlined style={{ marginLeft: 'auto' }} onClick={() => this.hide(item.id)} />
+                    </div>
+                  )}
+                  trigger="click"
+                  visible={this.state.clicked[item.id]}
+                  onVisibleChange={(visible) => this.handleClickedChange(visible, item.id)}
+                >
+                  <Badge
+                    className={`date-cell ${hasEvents ? 'important-date-cell' : ''}`}
+                    status={item.type as BadgeProps['status']}
+                    text={item.content}
+                  />
+                </Popover>
+              </Popover>
             </li>
           ))}
         </ul>
