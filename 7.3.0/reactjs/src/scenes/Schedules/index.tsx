@@ -1,10 +1,16 @@
 import React from 'react';
 import { FormInstance } from 'antd/lib/form';
 import { inject, observer } from 'mobx-react';
-import { Badge, Calendar, Card, Col, Popover, Row, Select } from 'antd';
+import { Badge, Button, Calendar, Card, Col, Popover, Row, Select } from 'antd';
 import { BadgeProps } from 'antd/lib/badge';
 import moment, { Moment } from 'moment';
-import { CloseOutlined, DeleteOutlined, EditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  QrcodeOutlined,
+} from '@ant-design/icons';
 import AppComponentBase from '../../components/AppComponentBase';
 import Stores from '../../stores/storeIdentifier';
 import './index.css';
@@ -15,59 +21,73 @@ import CreateQr from './components/createQr';
 import CourseStore from '../../stores/courseStore';
 import ClassStore from '../../stores/classStore';
 import { L } from '../../lib/abpUtility';
+import RoomStore from '../../stores/roomStore';
+import CreateOrUpdateSchedule from './components/createOrUpdateSchedule';
+import { WorkShiftDto } from '../../services/schedule/dto/workShiftDto';
 
 export interface IScheduleProps {
   classTimelineStore: ClassTimelineStore;
   courseStore: CourseStore;
   classStore: ClassStore;
+  roomStore: RoomStore;
 }
 
 export interface IScheduleState {
   modalVisible: boolean;
+  modalQR: boolean;
   maxResultCount: number;
   skipCount: number;
   filter: string;
-  clasTimelineId: number;
+  classTimelineId: number;
   selectedClassId: number;
+  selectedClassIdInModal: number;
   selectedCourseId: number;
+  selectedRoomId: number;
   maxResultClassCount: number;
   maxResultCourseCount: number;
+  maxResultRoomCount: number;
   hashSchedule: string;
+  lsWorkSheet: WorkShiftDto[];
   clicked: any;
   hovered: any;
 }
 
 // const { confirm } = Modal;
 
-@inject(Stores.ClassTimelineStore, Stores.ClassStore, Stores.CourseStore)
+@inject(Stores.ClassTimelineStore, Stores.ClassStore, Stores.CourseStore, Stores.RoomStore)
 @observer
 class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
   formRef = React.createRef<FormInstance>();
 
   state = {
     modalVisible: false,
+    modalQR: false,
     maxResultCount: 10,
     skipCount: 0,
     filter: '',
-    clasTimelineId: 0,
+    classTimelineId: 0,
     selectedClassId: 0,
+    selectedClassIdInModal: 0,
     selectedCourseId: 0,
+    selectedRoomId: 0,
     maxResultClassCount: 10,
     maxResultCourseCount: 10,
+    maxResultRoomCount: 10,
     hashSchedule: '',
+    lsWorkSheet: [],
     clicked: {},
     hovered: {},
   };
 
   async componentDidUpdate(
-    prevProps: any,
+    __prevProps: unknown,
     prevState: {
       maxResultCourseCount: number;
       maxResultClassCount: number;
       selectedCourseId: number;
       selectedClassId: number;
     }
-  ) {
+  ): Promise<void> {
     if (
       prevState.maxResultCourseCount !== this.state.maxResultCourseCount ||
       prevState.maxResultClassCount !== this.state.maxResultClassCount ||
@@ -129,6 +149,16 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     });
   };
 
+  ModalQr = () => {
+    this.setState({
+      modalQR: !this.state.modalQR,
+    });
+  };
+
+  handleUpdateLsWorkSheet = (newLsWorkSheet: WorkShiftDto[]): void => {
+    this.setState({ lsWorkSheet: newLsWorkSheet });
+  };
+
   async createOrUpdateModalOpen(entityDto: EntityDto) {
     if (entityDto.id === 0) {
       await this.props.classTimelineStore.createClassTimeline();
@@ -138,7 +168,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
 
     this.setState({
       // selectedClassId: this.props.classTimelineStore.editClassTimeline?.class?.id,
-      clasTimelineId: entityDto.id,
+      classTimelineId: entityDto.id,
     });
     this.Modal();
 
@@ -147,22 +177,23 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     }, 100);
   }
 
-  // handleCreate = () => {
-  //   const form = this.formRef.current;
+  handleCreate = () => {
+    const form = this.formRef.current;
 
-  //   form!.validateFields().then(async (values: any) => {
-  //     const updateValues = { ...values };
-  //     if (this.state.clasTimelineId === 0) {
-  //       await this.props.scheduleStore.create(updateValues);
-  //     } else {
-  //       await this.props.scheduleStore.update({ ...updateValues, id: this.state.scheduleId });
-  //     }
+    form!.validateFields().then(async (values: any) => {
+      const updateValues = { ...values };
+      updateValues.ListWorkShifts = this.state.lsWorkSheet;
+      if (this.state.classTimelineId === 0) {
+        await this.props.classTimelineStore.create(updateValues);
+      } else {
+        // await this.props.scheduleStore.update({ ...updateValues, id: this.state.scheduleId });
+      }
 
-  //     await this.getAll();
-  //     this.setState({ modalVisible: false });
-  //     form!.resetFields();
-  //   });
-  // };
+      await this.getAll();
+      this.setState({ modalVisible: false });
+      form!.resetFields();
+    });
+  };
 
   handleClassChange = (value: any) => {
     const selectedClassId = value === 'Select Class' ? 0 : value;
@@ -177,7 +208,7 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
   handleQrCode = (id: number) => {
     this.hide(id);
     this.hashSchedule(id);
-    this.Modal();
+    this.ModalQr();
   };
 
   async hashSchedule(id: number) {
@@ -214,6 +245,23 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
     const classeTimelines = classTimelineStore.classTimelines?.items || [];
     const classes = classStore.classes?.items || [];
     const courses = courseStore.courses?.items || [];
+
+    const courseOptions = [
+    { key: 0, value: 0, label: 'All Course' },
+    ...courses.map((course) => ({
+      key: course.id,
+      value: course.id,
+      label: course.courseName,
+    }))];
+
+    const classOptions = [
+      { key: 0, value: 0, label: 'All Class' },
+      ...classes.map((classroom) => ({
+        key: classroom.id,
+        value: classroom.id,
+        label: classroom.code,
+      })),
+    ]
 
     const getListData = (value: Moment) => {
       let listData;
@@ -320,47 +368,56 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
       <Card>
         <Row>
           <Col
-            xs={{ span: 6, offset: 1 }}
-            sm={{ span: 6, offset: 1 }}
-            md={{ span: 6, offset: 1 }}
-            lg={{ span: 4, offset: 1 }}
-            xl={{ span: 4, offset: 1 }}
-            xxl={{ span: 4, offset: 1 }}
+            xs={{ span: 8, offset: 2 }}
+            sm={{ span: 8, offset: 2 }}
+            md={{ span: 8, offset: 2 }}
+            lg={{ span: 4, offset: 2 }}
+            xl={{ span: 4, offset: 2 }}
+            xxl={{ span: 4, offset: 2 }}
           >
             <Select
-              options={[
-                { key: 0, value: 0, label: 'Select Course' },
-                ...courses.map((course) => ({
-                  key: course.id,
-                  value: course.id,
-                  label: course.courseName,
-                })),
-              ]}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())}
+              options={courseOptions}
               defaultValue={0} // Set the initial default value to 0
               onChange={this.handleCourseChange}
               style={{ width: 200 }}
             />
           </Col>
           <Col
-            xs={{ span: 6, offset: 1 }}
-            sm={{ span: 6, offset: 1 }}
-            md={{ span: 6, offset: 1 }}
-            lg={{ span: 4, offset: 1 }}
-            xl={{ span: 4, offset: 1 }}
-            xxl={{ span: 4, offset: 1 }}
+            xs={{ span: 8, offset: 2 }}
+            sm={{ span: 8, offset: 2 }}
+            md={{ span: 8, offset: 2 }}
+            lg={{ span: 4, offset: 2 }}
+            xl={{ span: 4, offset: 2 }}
+            xxl={{ span: 4, offset: 2 }}
           >
             <Select
-              options={[
-                { key: 0, value: 0, label: 'Select Class' },
-                ...classes.map((classroom) => ({
-                  key: classroom.id,
-                  value: classroom.id,
-                  label: classroom.code,
-                })),
-              ]}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())}
+              options={classOptions}
               defaultValue={0} // Set the initial default value to 0
               onChange={this.handleClassChange}
               style={{ width: 200 }}
+            />
+          </Col>
+          <Col
+            xs={{ span: 8, offset: 8 }}
+            sm={{ span: 8, offset: 8 }}
+            md={{ span: 8, offset: 8 }}
+            lg={{ span: 4, offset: 8 }}
+            xl={{ span: 4, offset: 8 }}
+            xxl={{ span: 4, offset: 8 }}
+          >
+            <Button
+              type="primary"
+              shape="circle"
+              icon={<PlusOutlined />}
+              onClick={() => this.createOrUpdateModalOpen({ id: 0 })}
             />
           </Col>
         </Row>
@@ -369,12 +426,29 @@ class Schedule extends AppComponentBase<IScheduleProps, IScheduleState> {
         </Row>
         <CreateQr
           hashSchedule={this.state.hashSchedule}
+          visible={this.state.modalQR}
+          onCancel={() => {
+            this.setState({
+              modalQR: false,
+            });
+          }}
+        />
+        <CreateOrUpdateSchedule
+          formRef={this.formRef}
           visible={this.state.modalVisible}
           onCancel={() => {
             this.setState({
               modalVisible: false,
             });
+            this.formRef.current?.resetFields();
           }}
+          modalType={this.state.classTimelineId === 0 ? 'create' : 'edit'}
+          onCreate={this.handleCreate}
+          classStore={this.props.classStore}
+          roomStore={this.props.roomStore}
+          selectedClassId={this.state.selectedClassIdInModal}
+          selectedRoomId={this.state.selectedRoomId}
+          onUpdateLsWorkSheet={this.handleUpdateLsWorkSheet}
         />
       </Card>
     );

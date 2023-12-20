@@ -1,7 +1,7 @@
 ﻿using EMS.Schedules.Dto;
 using System.Collections.Generic;
 
-namespace EMS.Classes.Dto
+namespace EMS.ClassTimelines.Dto
 {
     public class CreateAutomaticDto
     {

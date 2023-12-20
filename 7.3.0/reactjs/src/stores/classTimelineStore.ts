@@ -47,8 +47,6 @@ class ClassTimelineStore {
   async createClassTimeline() {
     this.editClassTimeline = {
       id: 0,
-      startDate: new Date(),
-      endDate: new Date(),
       class: {
         id: 0,
         code: 'string',
@@ -58,16 +56,10 @@ class ClassTimelineStore {
           courseFee: 0,
           quantity: 0,
         },
-        room: {
-          roomName: '',
-          maxContainer: 0,
-          id: 0,
-        },
         limitStudent: 0,
         currentStudent: 0,
         lessionTimes: 0,
         isActive: true,
-        lsWorkSheet: [],
       },
       schedule: {
         id: 0,
@@ -80,6 +72,14 @@ class ClassTimelineStore {
         shift: 1,
         date: new Date(),
       },
+      room: {
+        roomName: '',
+        maxContainer: 0,
+        id: 0,
+      },
+      startDate: new Date(),
+      endDate: new Date(),
+      ListWorkShifts: [],
     };
   }
 

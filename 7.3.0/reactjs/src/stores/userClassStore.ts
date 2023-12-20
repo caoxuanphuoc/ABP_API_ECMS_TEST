@@ -62,12 +62,6 @@ class UserClassStore {
           courseFee: 0,
           quantity: 0,
         },
-        room: {
-          id: 0,
-          roomName: '',
-          maxContainer: 0,
-        },
-        lsWorkSheet: [],
         limitStudent: 0,
         currentStudent: 0,
         lessionTimes: 0,

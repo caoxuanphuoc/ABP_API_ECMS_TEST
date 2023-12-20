@@ -1,7 +1,11 @@
+import { WorkShiftDto } from "../../schedule/dto/workShiftDto";
+
 export interface UpdateClassTimelineInput {
-  startDate: Date;
-  endDate: Date;
   classId: number;
   schedule: number;
+  roomId: number;
+  startDate: Date;
+  endDate: Date;
+  ListWorkShifts: WorkShiftDto[];
   id: number;
 }

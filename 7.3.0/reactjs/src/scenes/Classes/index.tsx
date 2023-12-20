@@ -11,15 +11,10 @@ import AppComponentBase from '../../components/AppComponentBase';
 import { EntityDto } from '../../services/dto/entityDto';
 import { L } from '../../lib/abpUtility';
 import CreateOrUpdateClass from './components/createOrUpdateClass';
-import ScheduleStore from '../../stores/scheduleStore';
-import RoomStore from '../../stores/roomStore';
-import { WorkShiftDto } from '../../services/schedule/dto/workShiftDto';
 
 export interface IClassProps {
   classStore: ClassStore;
   courseStore: CourseStore;
-  scheduleStore: ScheduleStore;
-  roomStore: RoomStore;
 }
 
 export interface IClassState {
@@ -29,14 +24,13 @@ export interface IClassState {
   classId: number;
   filter: string;
   selectedCourseId: number;
-  lsWorkSheet: WorkShiftDto[];
   courseId: number;
 }
 
 const { confirm } = Modal;
 const { Search } = Input;
 
-@inject(Stores.ClassStore, Stores.CourseStore, Stores.ScheduleStore, Stores.RoomStore)
+@inject(Stores.ClassStore, Stores.CourseStore)
 @observer
 class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
   formRef = React.createRef<FormInstance>();
@@ -110,7 +104,7 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     const form = this.formRef.current;
     form?.validateFields().then(async (values: any) => {
       const updateValues = { ...values };
-      updateValues.lsWorkSheet = this.state.lsWorkSheet;
+      // updateValues.lsWorkSheet = this.state.lsWorkSheet;
       if (this.state.classId === 0) {
         await this.props.classStore.create(updateValues);
       } else {
@@ -130,13 +124,9 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
     this.setState({ filter: value }, async () => await this.getAll());
   };
 
-  handleUpdateLsWorkSheet = (newLsWorkSheet: WorkShiftDto[]): void => {
-    this.setState({ lsWorkSheet: newLsWorkSheet });
-  };
-
   public render() {
     const { classes } = this.props.classStore;
-    // const { classId } = this.state;
+
     const columns = [
       {
         title: L('Code'),
@@ -293,8 +283,6 @@ class ClassRoom extends AppComponentBase<IClassProps, IClassState> {
           onCreate={this.handleCreate}
           courseStore={this.props.courseStore}
           selectedCourseId={this.state.selectedCourseId}
-          roomStore={this.props.roomStore}
-          onUpdateLsWorkSheet={this.handleUpdateLsWorkSheet}
         />
       </Card>
     );

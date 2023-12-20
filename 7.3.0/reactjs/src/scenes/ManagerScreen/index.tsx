@@ -1,4 +1,4 @@
-import { Card } from 'antd';
+import { Card, PageHeader } from 'antd';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
@@ -8,6 +8,7 @@ import UserClassStore from '../../stores/userClassStore';
 import Stores from '../../stores/storeIdentifier';
 import CourseStore from '../../stores/courseStore';
 import ListMember from './components/ListMember';
+import { L } from '../../lib/abpUtility';
 
 export interface IManagerScreenProps extends RouteComponentProps {
   userClassStore: UserClassStore;
@@ -44,16 +45,16 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
     },
   };
 
-  async getCourse(
-    id: any,
-    code: any,
-    limitStudent: any,
-    currentStudent: any,
-    lessionTimes: any
-  ) {
-    // const { course } = this.state;
-    const { courseStore } = this.props;
-    await courseStore.get(id);
+  // async getCourse(
+  //   id: any,
+  //   code: any,
+  //   limitStudent: any,
+  //   currentStudent: any,
+  //   lessionTimes: any
+  // ) {
+  //   // const { course } = this.state;
+  //   const { courseStore } = this.props;
+  //   await courseStore.get(id);
 
     // const result = courseStore.editCourse;
 
@@ -70,7 +71,7 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
 
   //   this.setState({ course: updateCourse });
   //   console.log(course);
-  }
+  // }
 
   public render() {
     console.log(this.props.location.state);
@@ -124,19 +125,26 @@ class ManagerScreen extends AppComponentBase<IManagerScreenProps, IManagerScreen
     };
 
     return (
-      <Card
-        tabList={tabList}
-        accessKey={this.state.activeTabKey}
-        onTabChange={(key) => onTabChange(key)}
-      >
-        {tabList.map(
-          (tab) =>
-            tab.key === this.state.activeTabKey && (
-              <React.Fragment key={tab.key}>{tab.content } </React.Fragment>
-              )
-          
-        )}
-      </Card>
+      <>
+        <PageHeader
+          onBack={() => {
+            window.location.href = '/classes';
+          }}
+          title={L('List Class')}
+        />
+
+        <Card
+          tabList={tabList}
+          // accessKey={this.state.activeTabKey}
+          onTabChange={(key) => onTabChange(key)}
+        >
+          {tabList.map(
+            (tab) => tab.key === this.state.activeTabKey && (
+              <React.Fragment key={tab.key}>{tab.content}</React.Fragment>
+            )
+
+          )}
+        </Card></>
     );
   }
 }

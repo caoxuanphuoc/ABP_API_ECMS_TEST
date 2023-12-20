@@ -1,5 +1,7 @@
 ﻿using Abp.AutoMapper;
+using EMS.Schedules.Dto;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EMS.ClassTimelines.Dto
@@ -8,12 +10,16 @@ namespace EMS.ClassTimelines.Dto
     public class CreateClassTimelineDto
     {
         [Required]
+        public long ClassId { get; set; }
+        [Required]
+        public long ScheduleId { get; set; }
+        [Required]
+        public int RoomId { get; set; }
+        [Required]
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
         [Required]
-        public long ClassId { get; set; }
-        [Required]
-        public long ScheduleId { get; set; }
+        public List<WorkShiftDto> ListWorkShifts { get; set; }
     }
 }

@@ -8,7 +8,7 @@ import { UpdateClassTimelineInput } from './dto/updateClassTimelineInput';
 
 class ClassTimelineService {
   public async create(createClassTimelineInput: CreateOrUpdateClassTimelineInput) {
-    let result = await http.post(`api/services/app/ClassTimeline/Create`, createClassTimelineInput);
+    let result = await http.post(`api/services/app/ClassTimeline/CreateClassTimeline`, createClassTimelineInput);
     return result.data.result;
   }
 
